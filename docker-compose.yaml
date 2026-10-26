@@ -38,7 +38,7 @@ services:
   
   ollama:
     image: ollama/ollama:latest
-    gpus: all
+    profiles: ["ai"]
     ports:
       - "11434:11434"
     volumes:

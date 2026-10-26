@@ -90,6 +90,16 @@ Zasady pracy i architekturę docelową opisuje [`AGENTS.md`](AGENTS.md).
 
 Nie używaj `docker compose down -v` bez potrzeby — usuwa wolumen z danymi bazy.
 
+## Ollama (opcjonalnie)
+
+Domyślne `docker compose up` nie uruchamia Ollamy. Aby włączyć lokalne modele AI:
+
+```bash
+docker compose --profile ai up -d ollama
+```
+
+Ollama działa również bez GPU (wolniej). Akceleracja NVIDIA wymaga sterowników NVIDIA i NVIDIA Container Toolkit, ale nie jest potrzebna do działania Roomly.
+
 ## Struktura projektu
 
 ```text

@@ -657,7 +657,6 @@ To lista startowa. Nie traktuj jej jako wymówki — to zadania do wykonania w p
 | `public/views/project.htmp.php` — literówka | Router i `render()` nie znajdą widoku | Usunąć nieużywany widok albo zmienić nazwę na poprawną |
 | Brak testów i schematu bazy | Kryteria 10–12, 31 niezrealizowane | Dodać `database/`, PHPUnit i pierwsze testy |
 | Brak i18n, motywu, JS | Kryteria 14, 18, 19, 30 niezrealizowane | Dodać `translations/`, `theme.js`, `validation.js` |
-| `ollama` ma `gpus: all` | Na maszynie bez GPU compose może się wywalić | Profil opcjonalny lub dokumentacja, że usługa jest opcjonalna |
 
 Po naprawie danej luki usuń ją z tej tabeli albo oznacz jako zrobioną w commitcie.
 
