@@ -39,14 +39,69 @@ Jeśli wymaganie jest niejednoznaczne, **nie wymyślaj tematu projektu ani regu�
 
 ---
 
-## 2. Cel projektu i aktualny etap
+## 2. Projekt Roomly — cel, zakres i model domenowy
 
-Projekt semestralny to **kompletna aplikacja webowa** zgodna z tematem zgłoszonym prowadzącemu. Ma realizować główny proces od początku do końca, a nie być zbiorem statycznych makiet. Podczas demo trzeba umieć wyjaśnić przepływ żądania: interfejs → routing → kontroler → logika/serwis → repozytorium → PostgreSQL → odpowiedź.
+**Nazwa:** Roomly — System Rezerwacji Sal i Stanowisk.
+**Cel:** aplikacja webowa do przeglądania, rezerwowania i zarządzania salami oraz stanowiskami pracy. Użytkownik wyszukuje pomieszczenia, filtruje je, sprawdza wyposażenie i dostępność, a następnie rezerwuje wybrany termin. Administrator zarządza użytkownikami, lokalizacjami, pomieszczeniami, wyposażeniem i rezerwacjami.
+**Zakres:** kompletna, działająca aplikacja z bazą danych, a nie makieta interfejsu.
 
-Temat projektu **nie jest jeszcze opisany w tym repozytorium**. Pierwszą decyzją produktową jest jego wybór i opisanie w `README.md`. Do tego czasu nie twórz „na zapas” encji domenowych, które nie wynikają z wymagań.
+### 2.1. Role i uprawnienia
 
-Aktualny stan (2026-11-16):
+- `USER` — rejestracja, logowanie, przeglądanie i filtrowanie pomieszczeń, sprawdzanie dostępności, tworzenie rezerwacji, przegląd własnych rezerwacji, anulowanie własnych rezerwacji, edycja profilu, zmiana hasła, preferencje powiadomień, język i motyw.
+- `ADMIN` — wszystkie uprawnienia `USER` oraz zarządzanie użytkownikami, lokalizacjami, pomieszczeniami, wyposażeniem i rezerwacjami; podgląd statystyk i wszystkich rezerwacji.
+- Rola jest zapisana w bazie, a rejestracja publiczna zawsze tworzy `USER`. Rola nie może pochodzić z pola formularza.
+- Uprawnienia są sprawdzane po stronie backendu przy każdym chronionym żądaniu. Ukrycie przycisku w HTML nie jest zabezpieczeniem.
 
+### 2.2. Główne przepływy
+
+1. **Konto:** rejestracja → logowanie → sesja → profil → zmiana hasła → wylogowanie.
+2. **Przeglądanie:** lista pomieszczeń → wyszukiwanie i filtry (lokalizacja, pojemność, wyposażenie, dostępność) → szczegóły pomieszczenia → galeria i kalendarz dostępności.
+3. **Rezerwacja:** wybór pomieszczenia i terminu → sprawdzenie dostępności → zapis rezerwacji w transakcji → potwierdzenie e-mail → widok „Moje rezerwacje”.
+4. **Anulowanie:** użytkownik anuluje własną przyszłą rezerwację zgodnie z konfigurowalnym cutoffem; administrator może anulować dowolną rezerwację.
+5. **Panel administratora:** statystyki → najbliższe rezerwacje → CRUD pomieszczeń, lokalizacji i wyposażenia → zarządzanie użytkownikami i rezerwacjami.
+6. **Powiadomienia:** e-mail po utworzeniu i anulowaniu rezerwacji oraz przypomnienie wysyłane przez CRON.
+
+### 2.3. Docelowy model domenowy
+
+| Encja | Rola | Kluczowe pola |
+|---|---|---|
+| `users` | konta i role | `id`, `name`, `email` (unikalny, bez względu na wielkość liter), `password_hash`, `role`, `is_blocked`, `created_at`, `updated_at` |
+| `user_settings` | preferencje użytkownika | `user_id` PK/FK, `language`, `theme`, `email_notifications`, `created_at`, `updated_at` |
+| `locations` | budynki, piętra lub strefy | `id`, `name`, `address`, `description`, `is_active`, `created_at`, `updated_at` |
+| `rooms` | sale i stanowiska | `id`, `location_id` FK, `name`, `description`, `capacity`, `kind` (`room`/`workstation`), `is_active`, `created_at`, `updated_at` |
+| `equipment` | słownik wyposażenia | `id`, `name`, `description`, `is_active` |
+| `room_equipment` | wiele-do-wielu | `room_id`, `equipment_id`, `quantity`, PK złożony |
+| `room_photos` | galeria pomieszczenia | `id`, `room_id` FK, `path`, `alt_text`, `sort_order`, `created_at` |
+| `reservations` | rezerwacje | `id`, `user_id` FK, `room_id` FK, `starts_at`, `ends_at`, `purpose`, `status` (`confirmed`/`cancelled`), `created_at`, `updated_at`, `cancelled_at` |
+| `reservation_reminders` | idempotencja przypomnień | `id`, `reservation_id` FK, `reminder_type`, `sent_at`, unikalne `(reservation_id, reminder_type)` |
+
+Wszystkie daty rezerwacji przechowuj jako `TIMESTAMPTZ`, a w UI pokazuj w strefie czasowej użytkownika. `starts_at` i `ends_at` oznaczają przedział `[starts_at, ends_at)`.
+
+### 2.4. Reguły biznesowe i invariants
+
+- **Zakaz nakładających się rezerwacji:** ten sam `room_id` nie może mieć dwóch aktywnych rezerwacji, których przedziały czasu się nakładają. Weryfikacja w aplikacji ma być przyjazna dla użytkownika, ale ostateczną gwarancją jest baza:
+  - rozszerzenie `btree_gist`,
+  - constraint `EXCLUDE USING gist (room_id WITH =, tstzrange(starts_at, ends_at, '[)') WITH &&) WHERE (status <> 'cancelled')`,
+  - zapis w transakcji; naruszenie constraintu tłumaczone na kontrolowane `409 Conflict`, nie `500`.
+- `ends_at` musi być późniejsze niż `starts_at`; rezerwacja nie może zaczynać się w przeszłości. Maksymalny czas rezerwacji i cutoff anulowania trzymaj w konfiguracji, nie rozsiewaj po kodzie.
+- Aktywna rezerwacja to `status = 'confirmed'`. Anulowana rezerwacja nie blokuje terminu, ale pozostaje w historii.
+- Użytkownik może anulować tylko własną rezerwację; administrator może anulować każdą. Sprawdzaj to po stronie serwera, nie tylko przez widoczność przycisku.
+- Pomieszczenia, lokalizacje i wyposażenie usuwaj jako soft delete (`is_active = false`) albo przez `ON DELETE RESTRICT`, jeśli mają historię. Nie kasuj historii rezerwacji przez `CASCADE`.
+- E-mail wysyłaj po commicie rezerwacji. Błąd SMTP nie może cofać poprawnie zapisanej rezerwacji; zapisz błąd w logu i pozwól ponowić wysyłkę.
+- CRON wysyła przypomnienia idempotentnie: `reservation_reminders` z unikalnym `(reservation_id, reminder_type)` lub równoważny mechanizm.
+- Wszystkie listy i szczegóły respektują role i właściciela zasobu. Nie ufaj `user_id`, `role` ani `room_id` przesłanym z formularza bez weryfikacji.
+
+### 2.5. Interfejs i Figma
+
+Projekt graficzny: [Figma — Roomly](https://www.figma.com/design/gJzJ7034mSXKZHaxMkkB1H).
+
+Figma jest **głównym źródłem prawdy** dla wyglądu: kolorystyki, typografii, układu, proporcji kart i paneli oraz nawigacji. Nie projektuj aplikacji od nowa i nie zastępuj przygotowanych widoków własnym, uproszczonym interfejsem. Jeśli nie masz dostępu do Figmy lub brakuje konkretnego widoku, poproś użytkownika o eksport/zrzuty zamiast zgadywać.
+
+### 2.6. Aktualny etap
+
+Aktualny stan (2026-11-18):
+
+- temat i model domenowy Roomly są opisane w `Projekt.txt` oraz w tym pliku;
 - istnieje konfiguracja Docker Compose z usługami `server`, `php`, `db`, `ollama`, `mailpit`, `pgadmin-wdpai`;
 - `public/index.php` jest jeszcze statyczną stroną startową, a nie front controllerem;
 - `Routing.php`, kontrolery i widoki są puste lub placeholderowe;
@@ -189,7 +244,7 @@ Projekt obejmuje **36 kryteriów**. Za każde można dostać 1 pkt (działa i mo
 - `public/` jest document rootem Nginx. Nie umieszczaj tam logiki aplikacji, konfiguracji ani sekretów.
 - `src/` nie może być dostępne bezpośrednio przez URL.
 - Katalogi `src/` zapisujemy małymi literami, aby mapowanie PSR-4 było jednoznaczne na Linuksie (Windows nie rozróżnia wielkości liter, produkcja często tak).
-- Pliki widoków mają nazwy `kebab-case.html.php`, np. `not-found.html.php`, `project.html.php`. Popraw literówkę `project.htmp.php` przy pierwszej okazji.
+- Pliki widoków mają nazwy `kebab-case.html.php`, np. `not-found.html.php`, `room-details.html.php`. Usuń nieużywany `project.htmp.php` albo popraw jego nazwę, jeśli widok zostaje.
 - Klasy: `PascalCase.php`; metody i zmienne: `camelCase`; tabele i kolumny: `snake_case`; stałe: `UPPER_SNAKE_CASE`.
 - `storage/` i `public/uploads/` nie mogą zawierać plików wykonywalnych; logi i uploady nie trafiają do Gita.
 - Nie edytuj `vendor/` ręcznie. Nie commituj `vendor/`, `.env`, logów, cache ani uploadów użytkowników.
@@ -464,7 +519,7 @@ Nie używaj `docker compose down -v` bez potwierdzenia — usuwa wolumen bazy i 
 
 ### Czego agent nie robi bez zgody
 
-- Nie wybiera tematu projektu ani nie wymyśla reguł biznesowych.
+- Nie zmienia przyjętego tematu projektu (Roomly) ani nie wymyśla reguł biznesowych.
 - Nie usuwa ani nie nadpisuje zmian użytkownika.
 - Nie wykonuje destrukcyjnych poleceń (`down -v`, `rm -rf`, `git reset --hard`, force push).
 - Nie commituje sekretów ani danych osobowych.
@@ -478,21 +533,21 @@ Nie używaj `docker compose down -v` bez potwierdzenia — usuwa wolumen bazy i 
 
 | Lab | Temat | Efekt w projekcie | Powiązane kryteria |
 |---|---|---|---|
-| 1 | Git, Docker, IDE | Działający Nginx + PHP-FPM, pierwszy commit, `.gitignore` | 2, 7, 35 |
-| 2 | MVC, routing, kontrolery, widoki, Composer | Front controller, router, `AppController`, widoki, PSR-4 | 3, 4, 5, 9 |
-| 3 | CSS | Tokeny, layout, komponenty, responsywność | 16, 17 |
+| 1 | Git, Docker, IDE | Działający Nginx + PHP-FPM, `.env.example`, `.gitignore`, `README.md`, weryfikacja `docker compose config` | 2, 7, 35 |
+| 2 | MVC, routing, kontrolery, widoki, Composer | Front controller, router z trasami `/`, `/rooms`, `/rooms/{id}`, `AppController`, layout i widoki, PSR-4 | 3, 4, 5, 9 |
+| 3 | CSS | Tokeny, layout, karty pomieszczeń, panel administratora, responsywność | 16, 17 |
 | 4 | Vibe coding, AI, Ollama | Ten `AGENTS.md`, bezpieczna praca z agentem, opcjonalna Ollama | 7, 29 |
-| 5 | Theme data, dark/light, WCAG | `data-theme`, `localStorage`, anty-FOUC, kontrast, fokus | 18, 19 |
-| 6 | Formularze, HTTP, walidacja | GET/POST, walidacja serwera, PRG, komunikaty błędów | 9, 13, 20 |
-| 7 | PostgreSQL, ERD, PDO | `db`, schemat, `Database`, prepared statements, ERD | 2, 6, 10, 11, 12 |
-| 8 | Modele, repozytoria, CRUD | `src/models`, `src/repositories`, CRUD, mapowanie | 3, 5, 10, 26 |
-| 9 | Auth i sesja | Rejestracja, logowanie, sesja, `requireLogin`, wylogowanie | 20, 21, 24 |
-| 10 | JavaScript, DOM, walidacja | Moduły JS, zdarzenia, walidacja klienta, dostępność | 14, 19 |
-| 11 | Fetch API, JSON | Endpointy API, GET/POST, stany UI, role admina | 15, 22, 23 |
-| 12 | Bezpieczeństwo | CSRF, XSS, SQLi, sesje, Security Bingo | 27 |
-| 13 | Upload, Mailpit, CRON, streaming, mapy, `.env` | Upload, e-mail, zadanie cykliczne, konfiguracja env | 32, 33, 34, 35 |
+| 5 | Theme data, dark/light, WCAG | `data-theme`, `localStorage`, anty-FOUC, kontrast, widoczny fokus | 18, 19 |
+| 6 | Formularze, HTTP, walidacja | Formularze logowania i rezerwacji, walidacja serwera, PRG, komunikaty błędów | 9, 13, 20 |
+| 7 | PostgreSQL, ERD, PDO | Schemat Roomly (`users`, `rooms`, `reservations` itd.), `btree_gist`, `Database`, prepared statements, ERD | 2, 6, 10, 11, 12 |
+| 8 | Modele, repozytoria, CRUD | `RoomRepository`, `ReservationRepository`, CRUD pomieszczeń, lokalizacji i rezerwacji | 3, 5, 10, 26 |
+| 9 | Auth i sesja | Rejestracja, logowanie, role `USER`/`ADMIN`, `requireLogin`, wylogowanie | 20, 21, 24 |
+| 10 | JavaScript, DOM, walidacja | Filtry pomieszczeń, walidacja terminu po stronie klienta, dostępność | 14, 19 |
+| 11 | Fetch API, JSON | API dostępności i rezerwacji, GET/POST, stany UI, akcje administratora | 15, 22, 23 |
+| 12 | Bezpieczeństwo | CSRF, XSS, SQLi, sesje, autoryzacja właściciela rezerwacji, Security Bingo | 27 |
+| 13 | Upload, Mailpit, CRON, streaming, mapy, `.env` | Galeria sal (upload), e-maile o rezerwacji, CRON przypomnień, konfiguracja env | 32, 33, 34, 35 |
 | 14 | Testy, WCAG, tłumaczenia, dokumentacja, deploy | PHPUnit, raport WCAG, PL/EN, README, eksport SQL, wdrożenie | 1, 12, 19, 30, 31, 36 |
-| 15 | Ewaluacja | Demo, checklista 36 kryteriów, dowody w README | wszystkie |
+| 15 | Ewaluacja | Demo rezerwacji na kontach `USER` i `ADMIN`, checklista 36 kryteriów, dowody w README | wszystkie |
 
 ---
 
@@ -509,7 +564,7 @@ Statusy uzupełniaj po realizacji. „Dowód” to miejsce, w którym oceniając
 | 5 | Obiektowy backend: klasy, enkapsulacja, typy, interfejsy, DI | `src/controllers`, `src/services`, `src/repositories`, `src/models` |
 | 6 | ERD w Mermaid: tabele, PK, FK, atrybuty, krotności, zgodność ze schematem | `README.md` — blok `mermaid erDiagram` |
 | 7 | Git: małe commity, czytelne komunikaty, merge do `main` | `git log --oneline --graph` |
-| 8 | Realizacja tematu: główny proces end-to-end, nie makieta | demo + `README.md` |
+| 8 | Realizacja tematu: główny proces end-to-end (wyszukanie sali → rezerwacja → anulowanie), nie makieta | demo + `README.md` |
 | 9 | HTML: semantyczny, wspólne partiale, formularze z etykietami i błędami | `public/views/` |
 | 10 | PostgreSQL: realne połączenie, konfiguracja poza kodem, parametryzacja, mapowanie | `src/Database.php`, `src/repositories/`, `.env.example` |
 | 11 | Złożoność bazy: kilka powiązanych encji, klucze, ograniczenia, normalizacja, typy | `database/01-schema.sql`, ERD |
@@ -524,18 +579,18 @@ Statusy uzupełniaj po realizacji. „Dowód” to miejsce, w którym oceniając
 | 20 | Logowanie: dane z bazy, `password_verify`, bezpieczny komunikat, przekierowanie | `SecurityController`, `UserRepository` |
 | 21 | Sesja: utrzymanie między podstronami, regeneracja ID, bezpieczne cookie, brak zaufania do klienta | `public/index.php`, `AppController` |
 | 22 | Uprawnienia: serwerowa autoryzacja przed każdą operacją, 401/403 | kontrolery, testy HTTP |
-| 23 | Role: min. dwie sensowne role, różne możliwości, osobne konta demo | `users.role`, seed, demo |
+| 23 | Role: min. dwie sensowne role (`USER`, `ADMIN`), różne możliwości, osobne konta demo | `users.role`, seed, demo |
 | 24 | Wylogowanie: unieważnienie sesji i cookie, brak dostępu po „Wstecz” | `logout()`, test manualny |
-| 25 | Widok/trigger/funkcja/transakcja: realny scenariusz, w eksporcie, pokazany na demo | `database/*.sql`, serwis |
-| 26 | JOIN + FK: zapytanie łączące tabele, przemyślane `ON DELETE`/`ON UPDATE` | repozytorium, schemat, README |
+| 25 | Widok/trigger/funkcja/transakcja: realny scenariusz, w eksporcie, pokazany na demo | `EXCLUDE` constraint rezerwacji, transakcja w `ReservationService`, `database/*.sql` |
+| 26 | JOIN + FK: zapytanie łączące tabele, przemyślane `ON DELETE`/`ON UPDATE` | `ReservationRepository` (rezerwacje + sale + użytkownicy), schemat, README |
 | 27 | Security Bingo: hash, prepared statements, walidacja, escapowanie, autoryzacja, CSRF, upload | `README.md` — tabela dowodów |
 | 28 | Brak replikacji: wspólne metody, serwisy, partiale, brak kopii SQL/walidacji/HTML | code review |
 | 29 | Czystość kodu: nazwy, krótkie metody, spójny format, brak dead code/debug | code review |
 | 30 | Tłumaczenia: PL/EN, teksty z katalogu, walidacja i błędy także | `translations/`, `Translator` |
 | 31 | Testy jednostkowe: uruchamialne, izolowane, poprawny i błędny przypadek, polecenie w README | `tests/`, `phpunit.xml`, README |
-| 32 | CRON: uzasadnione zadanie cykliczne, harmonogram, log, idempotencja, opis testowania | `bin/cron.php`, README |
-| 33 | PHPMailer/SMTP: użyteczna wiadomość, konfiguracja z env, obsługa błędów, Mailpit lokalnie | `src/services/MailService.php`, README |
-| 34 | Upload: rozmiar, MIME, rozszerzenie, unikalna nazwa, ścieżka w bazie, bezpieczny katalog | `UploadService`, `public/uploads/`, schemat |
+| 32 | CRON: uzasadnione zadanie cykliczne, harmonogram, log, idempotencja, opis testowania | `bin/cron.php`, `reservation_reminders`, `README.md` |
+| 33 | PHPMailer/SMTP: użyteczna wiadomość, konfiguracja z env, obsługa błędów, Mailpit lokalnie | `MailService` (rezerwacja, anulowanie, przypomnienie), `README.md` |
+| 34 | Upload: rozmiar, MIME, rozszerzenie, unikalna nazwa, ścieżka w bazie, bezpieczny katalog | `UploadService`, galeria `room_photos`, `public/uploads/`, schemat |
 | 35 | `.env`: sekrety poza kodem, `.env.example`, produkcja przez environment/secrets | `.env.example`, `.gitignore`, README |
 | 36 | Deploy: publiczny adres, produkcja z `main`, baza/uploady/zmienne, link i opis | `README.md`, `compose.production.yaml` |
 
@@ -591,14 +646,15 @@ To lista startowa. Nie traktuj jej jako wymówki — to zadania do wykonania w p
 |---|---|---|
 | `public/index.php` to statyczna strona, nie front controller | Brak MVC i routingu | Podłączyć autoload, `App\Routing`, trasy, 404 |
 | `Routing.php` w root jest pusty | Router nie istnieje | `src/Routing.php` z namespace `App`, metody `get/post/patch/delete`, `dispatch` |
-| Kontrolery i widoki są puste | Brak przepływu MVC | `AppController`, `DefaultController`, `ProjectController`, layout i widoki |
+| Kontrolery i widoki są puste | Brak przepływu MVC | `AppController`, `RoomController`, `ReservationController`, layout i widoki |
 | Brak `composer.json` i `vendor/` | Brak autoloadingu PSR-4 | Dodać Composer, mapowanie `App\` → `src/`, `composer dump-autoload` |
+| Brak wdrożenia projektu Figma | Kryterium 16 wymaga spójnego, przygotowanego wyglądu | Przenieść tokeny i komponenty z Figmy do `public/css/style.css`; przy braku dostępu poprosić o eksport |
 | README jest tylko szkieletem | Kryterium 1 wymaga pełnej dokumentacji | Uzupełnić screenshoty, ERD, routing, testy, WCAG, Security Bingo i deploy (Lab 14) |
 | `pg-data` jest zadeklarowany, ale nie podłączony do `db` | Dane bazy nie są trwałe | Zamontować `pg-data:/var/lib/postgresql/data` |
 | Init SQL montowany z `./docker/db`, gdzie jest Dockerfile | PostgreSQL nie wykona Dockerfile'a jako SQL | Przenieść skrypty do `database/` i montować `./database:/docker-entrypoint-initdb.d:ro` |
 | Brak healthchecka `db` i `depends_on` | PHP może startować przed bazą | Dodać healthcheck i `depends_on: condition: service_healthy` |
 | Kontener `php` nie dostaje zmiennych `DB_*` | Aplikacja nie ma z czego zbudować połączenia PDO | Przekazać `DB_*` w sekcji `environment` usługi `php` i czytać je w `src/Database.php` |
-| `public/views/project.htmp.php` — literówka | Router i `render()` nie znajdą widoku | Zmienić na `project.html.php` |
+| `public/views/project.htmp.php` — literówka | Router i `render()` nie znajdą widoku | Usunąć nieużywany widok albo zmienić nazwę na poprawną |
 | Brak testów i schematu bazy | Kryteria 10–12, 31 niezrealizowane | Dodać `database/`, PHPUnit i pierwsze testy |
 | Brak i18n, motywu, JS | Kryteria 14, 18, 19, 30 niezrealizowane | Dodać `translations/`, `theme.js`, `validation.js` |
 | `ollama` ma `gpus: all` | Na maszynie bez GPU compose może się wywalić | Profil opcjonalny lub dokumentacja, że usługa jest opcjonalna |
@@ -765,9 +821,9 @@ Ten plik jest żywym dokumentem. Aktualizuj go, gdy:
 - zmienia się architektura, stack lub struktura katalogów;
 - pojawia się nowa konwencja, której agent powinien przestrzegać;
 - zmienia się sposób uruchamiania, testowania lub wdrażania;
-- zostaje wybrany temat projektu i trzeba opisać domenę;
+- zmienia się przyjęty model domenowy lub reguły biznesowe Roomly;
 - zmieniają się wymagania prowadzącego.
 
 Nie kopiuj do niego całego README ani całych laboratoriów. Trzymaj tu **operacyjne zasady**, a szczegóły produktu w `README.md`.
 
-**Ostatnia aktualizacja:** 2026-11-16
+**Ostatnia aktualizacja:** 2026-11-18

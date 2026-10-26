@@ -1,0 +1,179 @@
+# Projekt: Roomly – System Rezerwacji Sal i Stanowisk
+
+## 1. Cel projektu
+
+Twoim zadaniem jest stworzenie aplikacji internetowej o nazwie **Roomly**, służącej do przeglądania, rezerwowania i zarządzania salami oraz stanowiskami pracy.
+
+Aplikacja ma umożliwiać użytkownikom wyszukiwanie dostępnych pomieszczeń, sprawdzanie ich wyposażenia, przeglądanie szczegółów oraz dokonywanie rezerwacji na wybrany termin.
+
+System powinien również posiadać panel administratora, który umożliwi zarządzanie użytkownikami, pomieszczeniami, lokalizacjami i rezerwacjami.
+
+Projekt ma być kompletną, działającą aplikacją webową, a nie jedynie demonstracją interfejsu. Wszystkie istotne funkcjonalności muszą być rzeczywiście zaimplementowane i zintegrowane z bazą danych.
+
+## 2. Technologie i ograniczenia
+
+W projekcie należy wykorzystać:
+
+- **PHP 8.3** – backend aplikacji.
+- **PostgreSQL** – relacyjna baza danych.
+- **HTML5** – struktura stron.
+- **CSS3** – wygląd i responsywność.
+- **JavaScript** – interakcje po stronie klienta.
+- **Fetch API** – asynchroniczna komunikacja z backendem.
+- **Docker Compose** – uruchamianie środowiska.
+- **PHPMailer** – wysyłanie wiadomości e-mail.
+- **CRON** – zadania wykonywane cyklicznie.
+
+Aplikacja powinna wykorzystywać architekturę MVC i programowanie obiektowe.
+
+Nie używaj frameworków PHP, takich jak Laravel czy Symfony. Nie wprowadzaj dodatkowych frameworków ani zależności bez uzasadnienia.
+
+## 3. Role użytkowników
+
+System powinien obsługiwać dwie podstawowe role.
+
+### Użytkownik
+
+Może:
+- założyć konto i zalogować się;
+- przeglądać dostępne sale i stanowiska;
+- filtrować pomieszczenia według lokalizacji, liczby miejsc, wyposażenia i dostępności;
+- przeglądać szczegółowe informacje o pomieszczeniu;
+- sprawdzać dostępność w wybranym terminie;
+- tworzyć rezerwacje;
+- przeglądać swoje przyszłe i historyczne rezerwacje;
+- anulować własne rezerwacje zgodnie z zasadami systemu;
+- edytować dane profilu;
+- zmieniać hasło i ustawienia konta;
+- zarządzać preferencjami powiadomień.
+
+### Administrator
+
+Posiada wszystkie uprawnienia zwykłego użytkownika oraz może:
+- zarządzać użytkownikami;
+- dodawać, edytować i usuwać sale oraz stanowiska;
+- zarządzać lokalizacjami;
+- zarządzać wyposażeniem pomieszczeń;
+- przeglądać wszystkie rezerwacje;
+- anulować rezerwacje użytkowników;
+- kontrolować dostępność pomieszczeń;
+- przeglądać podstawowe statystyki i zestawienia.
+
+Uprawnienia muszą być weryfikowane po stronie backendu, a nie tylko poprzez ukrywanie elementów interfejsu.
+
+## 4. Główne funkcjonalności
+
+### 4.1. Rejestracja i logowanie
+
+- Rejestracja użytkownika za pomocą formularza.
+- Logowanie i wylogowywanie.
+- Bezpieczne przechowywanie haseł z wykorzystaniem `password_hash()`.
+- Weryfikacja haseł przez `password_verify()`.
+- Obsługa sesji użytkownika.
+- Kontrola dostępu do podstron wymagających uwierzytelnienia.
+- Rozróżnianie ról użytkowników.
+
+### 4.2. Przeglądanie pomieszczeń
+
+Każde pomieszczenie powinno posiadać:
+- nazwę;
+- opis;
+- lokalizację;
+- pojemność;
+- zdjęcia;
+- listę wyposażenia;
+- status dostępności.
+
+Użytkownik powinien móc:
+- przeglądać pomieszczenia w formie kart;
+- wyszukiwać je po nazwie;
+- filtrować według lokalizacji;
+- filtrować według liczby miejsc;
+- wybierać wymagane wyposażenie;
+- sprawdzać dostępność dla wybranego terminu.
+
+### 4.3. Szczegóły pomieszczenia
+
+Widok szczegółów powinien zawierać:
+- galerię zdjęć;
+- nazwę i opis;
+- lokalizację;
+- pojemność;
+- wyposażenie;
+- kalendarz dostępności;
+- formularz rezerwacji.
+
+### 4.4. Rezerwacje
+
+Użytkownik powinien móc wybrać:
+- pomieszczenie;
+- datę;
+- godzinę rozpoczęcia;
+- godzinę zakończenia;
+- opcjonalny opis lub cel spotkania.
+
+System musi sprawdzać, czy pomieszczenie jest dostępne w wybranym przedziale czasu.
+
+**Najważniejsze wymaganie:** nie może istnieć możliwość utworzenia dwóch nakładających się rezerwacji tego samego pomieszczenia.
+
+Weryfikacja musi odbywać się po stronie serwera i bazy danych. Należy wykorzystać odpowiednie mechanizmy transakcyjne PostgreSQL, aby uniknąć sytuacji, w której dwie równoczesne próby rezerwacji otrzymają potwierdzenie dostępności.
+
+Użytkownik powinien móc:
+- przeglądać swoje rezerwacje;
+- sprawdzać ich status;
+- anulować rezerwacje;
+- przeglądać historię.
+
+### 4.5. Panel administratora
+
+Panel powinien zapewniać:
+- podsumowanie liczby użytkowników, pomieszczeń i rezerwacji;
+- przegląd najbliższych rezerwacji;
+- statystyki wykorzystania pomieszczeń;
+- zarządzanie pomieszczeniami;
+- zarządzanie lokalizacjami;
+- zarządzanie wyposażeniem;
+- zarządzanie użytkownikami;
+- zarządzanie rezerwacjami.
+
+Operacje administracyjne muszą być odpowiednio zabezpieczone.
+
+### 4.6. Profil i ustawienia
+
+Użytkownik powinien mieć możliwość:
+- przeglądania i edycji danych osobowych;
+- zmiany hasła;
+- ustawienia preferencji powiadomień;
+- wyboru języka;
+- wyboru jasnego lub ciemnego motywu.
+
+### 4.7. Powiadomienia e-mail
+
+Wykorzystaj PHPMailer do obsługi wiadomości związanych z rezerwacjami.
+
+System powinien obsługiwać:
+- potwierdzenie utworzenia rezerwacji;
+- informację o anulowaniu rezerwacji;
+- przypomnienie o zbliżającej się rezerwacji.
+
+Przypomnienia powinny być wysyłane automatycznie przez zadanie CRON.
+
+Błędy wysyłki nie powinny powodować utraty lub cofnięcia poprawnie zapisanej rezerwacji.
+
+## 5. Projekt interfejsu
+
+Projekt graficzny aplikacji został przygotowany w Figma:
+
+https://www.figma.com/design/gJzJ7034mSXKZHaxMkkB1H
+
+**Traktuj projekt Figma jako główne źródło informacji o wyglądzie i układzie interfejsu.**
+
+Nie projektuj aplikacji od nowa i nie zastępuj przygotowanych widoków własnym, uproszczonym interfejsem.
+
+Zachowaj:
+- kolorystykę;
+- typografię;
+- układ elementów;
+- proporcje kart i paneli;
+- nawigację;
+-

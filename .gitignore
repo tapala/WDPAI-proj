@@ -1,0 +1,30 @@
+# Sekrety i konfiguracja lokalna
+.env
+.env.*
+!.env.example
+
+# Composer
+/vendor/
+composer.phar
+
+# Logi i dane runtime
+*.log
+/storage/logs/
+/storage/cache/
+/public/uploads/
+
+# Narzędzia testowe
+.phpunit.result.cache
+/coverage/
+
+# Pliki IDE i systemowe
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Ewentualne zależności frontendowe
+/node_modules/
