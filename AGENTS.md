@@ -5,8 +5,8 @@
 >
 > **Repozytorium:** `tapala/WDPAI-proj`
 > **Kurs:** Projektowanie aplikacji internetowych 26/27
-> **Wersja dokumentu:** 2026-11-16
-> **Aktualny etap:** szkielet po Laboratorium 1, przygotowany pod Laboratorium 2; MVC nie jest jeszcze ukończone.
+> **Wersja dokumentu:** 2026-11-18
+> **Aktualny etap:** Laboratorium 2 ukończone — działają front controller, router, layout, strona główna, katalog sal `/rooms` i `/rooms/{id}` oraz testy jednostkowe.
 
 ---
 
@@ -103,12 +103,13 @@ Aktualny stan (2026-11-18):
 
 - temat i model domenowy Roomly są opisane w `Projekt.txt` oraz w tym pliku;
 - istnieje konfiguracja Docker Compose z usługami `server`, `php`, `db`, `ollama`, `mailpit`, `pgadmin-wdpai`;
-- `public/index.php` jest jeszcze statyczną stroną startową, a nie front controllerem;
-- `Routing.php`, kontrolery i widoki są puste lub placeholderowe;
-- brakuje `composer.json`, `vendor/`, testów, schematu bazy i danych demo; `.env.example`, `.gitignore` i szkielet `README.md` są już gotowe;
-- część plików ma robocze nazwy lub literówki (np. `public/views/project.htmp.php`).
+- działa front controller `public/index.php`, router `App\Routing`, `AppController`, `View`, `Translator` oraz strona główna z layoutem i przełączaniem PL/EN;
+- `composer.json` z mapowaniem PSR-4 `App\` → `src/` i wygenerowany autoloader są gotowe;
+- trasy domenowe `/rooms` (filtry `q`, `kind`, `min_capacity`, `sort`) i `/rooms/{id}` działają na danych z `InMemoryRoomRepository`;
+- testy jednostkowe routingu i filtra sal uruchamiane przez PHPUnit;
+- brakuje schematu bazy, danych demo w SQL, uwierzytelniania, JavaScriptu i pełnego designu z Figmy.
 
-To jest **stan początkowy**, nie działająca aplikacja. Agent ma go rozwijać zgodnie z roadmapą, nie opisywać jako ukończony.
+To nie jest jeszcze działająca aplikacja domenowa. Agent ma ją rozwijać zgodnie z roadmapą, nie opisywać jako ukończoną.
 
 ---
 
@@ -212,20 +213,17 @@ Projekt obejmuje **36 kryteriów**. Za każde można dostać 1 pkt (działa i mo
 │       │   ├── login.html.php
 │       │   └── register.html.php
 │       ├── errors/
-│       │   ├── 400.html.php
-│       │   ├── 403.html.php
-│       │   ├── 404.html.php
-│       │   └── 500.html.php
+│       │   └── error.html.php     # wspólny widok błędów HTTP
 │       └── ...                    # widoki domenowe
 ├── src/
 │   ├── Routing.php                # App\Routing
 │   ├── Database.php               # App\Database, fabryka PDO
-│   ├── controllers/               # App\Controller
-│   ├── models/                    # App\Model
-│   ├── repositories/              # App\Repository
-│   ├── services/                  # App\Service
-│   ├── security/                  # App\Security (sesja, CSRF, role)
-│   └── support/                   # App\Support (walidacja, tłumaczenia)
+│   ├── Controller/                # App\Controller
+│   ├── Model/                     # App\Model
+│   ├── Repository/                # App\Repository
+│   ├── Service/                   # App\Service
+│   ├── Security/                  # App\Security (sesja, CSRF, role)
+│   └── Support/                   # App\Support (walidacja, tłumaczenia)
 ├── tests/
 │   ├── bootstrap.php
 │   └── Unit/
@@ -243,8 +241,8 @@ Projekt obejmuje **36 kryteriów**. Za każde można dostać 1 pkt (działa i mo
 
 - `public/` jest document rootem Nginx. Nie umieszczaj tam logiki aplikacji, konfiguracji ani sekretów.
 - `src/` nie może być dostępne bezpośrednio przez URL.
-- Katalogi `src/` zapisujemy małymi literami, aby mapowanie PSR-4 było jednoznaczne na Linuksie (Windows nie rozróżnia wielkości liter, produkcja często tak).
-- Pliki widoków mają nazwy `kebab-case.html.php`, np. `not-found.html.php`, `room-details.html.php`. Usuń nieużywany `project.htmp.php` albo popraw jego nazwę, jeśli widok zostaje.
+- Katalogi warstw w `src/` odpowiadają nazwom segmentów namespace (`src/Controller` dla `App\Controller`) — PSR-4 rozróżnia wielkość liter na Linuksie.
+- Pliki widoków mają nazwy `kebab-case.html.php`, np. `room-details.html.php`.
 - Klasy: `PascalCase.php`; metody i zmienne: `camelCase`; tabele i kolumny: `snake_case`; stałe: `UPPER_SNAKE_CASE`.
 - `storage/` i `public/uploads/` nie mogą zawierać plików wykonywalnych; logi i uploady nie trafiają do Gita.
 - Nie edytuj `vendor/` ręcznie. Nie commituj `vendor/`, `.env`, logów, cache ani uploadów użytkowników.
@@ -520,6 +518,8 @@ Nie używaj `docker compose down -v` bez potwierdzenia — usuwa wolumen bazy i 
 ### Czego agent nie robi bez zgody
 
 - Nie zmienia przyjętego tematu projektu (Roomly) ani nie wymyśla reguł biznesowych.
+- Nie commituje i nie wypycha zmian — commit i push wykonuje wyłącznie użytkownik; po każdej ukończonej jednostce pracy agent tylko zgłasza, że zmiana jest gotowa do commita.
+- Nie przepisuje historii Git (rebase, amend, force push) bez wyraźnego polecenia użytkownika i uzasadnienia.
 - Nie usuwa ani nie nadpisuje zmian użytkownika.
 - Nie wykonuje destrukcyjnych poleceń (`down -v`, `rm -rf`, `git reset --hard`, force push).
 - Nie commituje sekretów ani danych osobowych.
@@ -561,12 +561,12 @@ Statusy uzupełniaj po realizacji. „Dowód” to miejsce, w którym oceniając
 | 2 | Docker: powtarzalny `up --build`, PostgreSQL, wolumen, opis portów i zmiennych | `docker-compose.yaml`, `README.md`, test na czystym klonie |
 | 3 | Architektura: MVC lub osobny frontend/backend, diagram warstw, cienki kontroler | `README.md` + `src/`, `public/` |
 | 4 | Routing: statyczna trasa, regex, path param z walidacją, query param, 400/404 | `public/index.php`, `src/Routing.php`, testy HTTP |
-| 5 | Obiektowy backend: klasy, enkapsulacja, typy, interfejsy, DI | `src/controllers`, `src/services`, `src/repositories`, `src/models` |
+| 5 | Obiektowy backend: klasy, enkapsulacja, typy, interfejsy, DI | `src/Controller`, `src/Service`, `src/Repository`, `src/Model` |
 | 6 | ERD w Mermaid: tabele, PK, FK, atrybuty, krotności, zgodność ze schematem | `README.md` — blok `mermaid erDiagram` |
 | 7 | Git: małe commity, czytelne komunikaty, merge do `main` | `git log --oneline --graph` |
 | 8 | Realizacja tematu: główny proces end-to-end (wyszukanie sali → rezerwacja → anulowanie), nie makieta | demo + `README.md` |
 | 9 | HTML: semantyczny, wspólne partiale, formularze z etykietami i błędami | `public/views/` |
-| 10 | PostgreSQL: realne połączenie, konfiguracja poza kodem, parametryzacja, mapowanie | `src/Database.php`, `src/repositories/`, `.env.example` |
+| 10 | PostgreSQL: realne połączenie, konfiguracja poza kodem, parametryzacja, mapowanie | `src/Database.php`, `src/Repository/`, `.env.example` |
 | 11 | Złożoność bazy: kilka powiązanych encji, klucze, ograniczenia, normalizacja, typy | `database/01-schema.sql`, ERD |
 | 12 | Eksport `.sql`: schemat + bezpieczne dane demo, import na pustej bazie | `database/*.sql`, README |
 | 13 | PHP: wspierana wersja, typy, obsługa błędów, brak warningów | `php -l`, logi, code review |
@@ -644,19 +644,15 @@ To lista startowa. Nie traktuj jej jako wymówki — to zadania do wykonania w p
 
 | Problem | Dlaczego ważne | Docelowo |
 |---|---|---|
-| `public/index.php` to statyczna strona, nie front controller | Brak MVC i routingu | Podłączyć autoload, `App\Routing`, trasy, 404 |
-| `Routing.php` w root jest pusty | Router nie istnieje | `src/Routing.php` z namespace `App`, metody `get/post/patch/delete`, `dispatch` |
-| Kontrolery i widoki są puste | Brak przepływu MVC | `AppController`, `RoomController`, `ReservationController`, layout i widoki |
-| Brak `composer.json` i `vendor/` | Brak autoloadingu PSR-4 | Dodać Composer, mapowanie `App\` → `src/`, `composer dump-autoload` |
 | Brak wdrożenia projektu Figma | Kryterium 16 wymaga spójnego, przygotowanego wyglądu | Przenieść tokeny i komponenty z Figmy do `public/css/style.css`; przy braku dostępu poprosić o eksport |
-| README jest tylko szkieletem | Kryterium 1 wymaga pełnej dokumentacji | Uzupełnić screenshoty, ERD, routing, testy, WCAG, Security Bingo i deploy (Lab 14) |
+| README jest tylko częściowo uzupełnione | Kryterium 1 wymaga pełnej dokumentacji | Uzupełnić screenshoty, ERD, testy, WCAG, Security Bingo i deploy (Lab 14) |
 | `pg-data` jest zadeklarowany, ale nie podłączony do `db` | Dane bazy nie są trwałe | Zamontować `pg-data:/var/lib/postgresql/data` |
 | Init SQL montowany z `./docker/db`, gdzie jest Dockerfile | PostgreSQL nie wykona Dockerfile'a jako SQL | Przenieść skrypty do `database/` i montować `./database:/docker-entrypoint-initdb.d:ro` |
 | Brak healthchecka `db` i `depends_on` | PHP może startować przed bazą | Dodać healthcheck i `depends_on: condition: service_healthy` |
 | Kontener `php` nie dostaje zmiennych `DB_*` | Aplikacja nie ma z czego zbudować połączenia PDO | Przekazać `DB_*` w sekcji `environment` usługi `php` i czytać je w `src/Database.php` |
-| `public/views/project.htmp.php` — literówka | Router i `render()` nie znajdą widoku | Usunąć nieużywany widok albo zmienić nazwę na poprawną |
-| Brak testów i schematu bazy | Kryteria 10–12, 31 niezrealizowane | Dodać `database/`, PHPUnit i pierwsze testy |
-| Brak i18n, motywu, JS | Kryteria 14, 18, 19, 30 niezrealizowane | Dodać `translations/`, `theme.js`, `validation.js` |
+| Brak schematu bazy i danych SQL | Kryteria 10–12 niezrealizowane | Dodać `database/01-schema.sql`, `database/02-seed.sql` i repozytorium PDO (Lab 7) |
+| Brak uwierzytelniania i ról | Kryteria 20–24 niezrealizowane | Dodać logowanie, sesję, `USER`/`ADMIN` i autoryzację (Lab 9) |
+| Brak motywu i JavaScriptu; i18n ma tylko bazowy przełącznik PL/EN | Kryteria 14, 18, 19 niezrealizowane | Dodać `theme.js`, `validation.js` i pełne tłumaczenia walidacji |
 
 Po naprawie danej luki usuń ją z tej tabeli albo oznacz jako zrobioną w commitcie.
 

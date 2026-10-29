@@ -15,6 +15,7 @@ composer.phar
 
 # Narzędzia testowe
 .phpunit.result.cache
+.phpunit.cache/
 /coverage/
 
 # Pliki IDE i systemowe
