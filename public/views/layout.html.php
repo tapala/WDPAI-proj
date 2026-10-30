@@ -44,5 +44,7 @@ $sectionLabel = str_starts_with($currentPath, '/rooms')
 
         <?php require __DIR__ . '/partials/footer.html.php'; ?>
     </div>
+
+    <?php require __DIR__ . '/partials/mobile-nav.html.php'; ?>
 </body>
 </html>
