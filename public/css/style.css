@@ -1,17 +1,126 @@
+@font-face {
+    font-family: "Inter Variable";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url("/fonts/inter/inter-latin-wght-normal.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Inter Variable";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url("/fonts/inter/inter-latin-ext-wght-normal.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
-    --color-bg: #f5f7fb;
+    /* Typography */
+    --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    --font-size-3xs: 0.625rem;
+    --font-size-2xs: 0.6875rem;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.8125rem;
+    --font-size-md: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.0625rem;
+    --font-size-xl: 1.125rem;
+    --font-size-2xl: 1.25rem;
+    --font-size-3xl: 1.375rem;
+    --font-size-4xl: 1.4375rem;
+    --font-size-5xl: 1.5625rem;
+    --font-size-6xl: 1.75rem;
+
+    --line-height-tight: 1.2;
+    --line-height-snug: 1.35;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.6;
+
+    /* Colors */
+    --color-bg: #f6f7fb;
     --color-surface: #ffffff;
     --color-text: #172033;
-    --color-muted: #5a6577;
-    --color-primary: #2f5eea;
-    --color-primary-hover: #2448bd;
+    /* Figma uses #7b8497 for small text, but it is only 3.8:1 on white; this keeps AA contrast. */
+    --color-muted: #667085;
+    --color-primary: #6257d9;
+    --color-primary-hover: #5147c4;
     --color-primary-contrast: #ffffff;
-    --color-border: #dfe4ed;
-    --color-focus: #d97706;
+    --color-primary-soft: #f0eeff;
+    --color-border: #e8ebf2;
+    --color-border-strong: #d8e2e9;
+    --color-focus: #6257d9;
+
+    /* Sidebar */
+    --color-sidebar: #171b2e;
+    --color-sidebar-active: #292d46;
+    --color-sidebar-text: #a9b0c3;
+    --color-sidebar-text-active: #ffffff;
+    --color-sidebar-heading: #7f879d;
+    --color-sidebar-divider: #343950;
+    --color-avatar: #514c83;
+
+    /* Status */
+    --color-success: #1b9a72;
+    --color-success-strong: #0f6b4f;
+    --color-success-soft: #e8f7f1;
+    --color-warning: #d99027;
+    --color-warning-strong: #8a5a00;
+    --color-warning-soft: #fff4e3;
+    --color-info: #4c86d9;
+    --color-info-strong: #2f5fa8;
+    --color-info-soft: #eaf2ff;
+
+    /* Room thumbnail tints */
+    --color-thumb-blue: #d8e2e9;
+    --color-thumb-sand: #e9e1d7;
+    --color-thumb-green: #dde8df;
+    --color-thumb-lilac: #e8e4ff;
+
+    /* Radii */
+    --radius-xs: 2px;
     --radius-sm: 8px;
-    --radius-md: 14px;
-    --shadow-soft: 0 14px 36px rgb(23 32 51 / 8%);
-    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 16px;
+    --radius-2xl: 19px;
+    --radius-pill: 999px;
+
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-7: 1.75rem;
+    --space-8: 2rem;
+    --space-9: 2.25rem;
+    --space-10: 2.5rem;
+    --space-11: 2.75rem;
+    --space-12: 3rem;
+    --space-14: 3.5rem;
+    --space-16: 4rem;
+
+    /* Layout */
+    --container-width: 1120px;
+    --sidebar-width: 246px;
+    --sidebar-padding: 28px;
+    --content-padding: 36px;
+
+    /* Elevation */
+    --shadow-soft: 0 1px 2px rgb(23 32 51 / 4%);
+    --shadow-elevated: 0 14px 36px rgb(23 32 51 / 8%);
+
+    /* Motion */
+    --transition-fast: 120ms ease;
+    --transition-base: 180ms ease;
 }
 
 *,
@@ -22,6 +131,8 @@
 
 html {
     color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 body {
@@ -30,23 +141,60 @@ body {
     min-height: 100vh;
     margin: 0;
     font-family: var(--font-sans);
-    line-height: 1.6;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-relaxed);
     color: var(--color-text);
     background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 var(--space-3);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    color: var(--color-text);
+}
+
+h1 {
+    font-size: var(--font-size-6xl);
+}
+
+h2 {
+    font-size: var(--font-size-2xl);
+}
+
+h3 {
+    font-size: var(--font-size-base);
+}
+
+h4 {
+    font-size: var(--font-size-md);
 }
 
 a {
     color: var(--color-primary);
+    text-underline-offset: 0.18em;
 }
 
 a:hover {
     color: var(--color-primary-hover);
 }
 
-a:focus-visible,
-button:focus-visible {
+:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+}
+
+::selection {
+    color: var(--color-text);
+    background: var(--color-primary-soft);
 }
 
 .skip-link {
@@ -65,7 +213,7 @@ button:focus-visible {
 }
 
 .container {
-    width: min(1120px, 100% - 2rem);
+    width: min(var(--container-width), 100% - var(--space-8));
     margin-inline: auto;
 }
 
@@ -100,7 +248,7 @@ button:focus-visible {
     font-size: 1.1rem;
     color: var(--color-primary-contrast);
     background: var(--color-primary);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
 }
 
 .site-nav {
@@ -136,7 +284,7 @@ button:focus-visible {
     padding: 0.25rem 0.5rem;
     color: var(--color-muted);
     text-decoration: none;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .language-switcher a[aria-current="true"] {
@@ -147,7 +295,7 @@ button:focus-visible {
 
 .site-main {
     flex: 1;
-    padding-block: clamp(2rem, 5vw, 4rem);
+    padding-block: clamp(var(--space-8), 5vw, var(--space-16));
 }
 
 .hero {
@@ -205,7 +353,7 @@ button:focus-visible {
     padding: 1.35rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
@@ -237,13 +385,17 @@ button:focus-visible {
 
 .button {
     display: inline-block;
-    margin-top: 0.75rem;
+    margin-top: var(--space-3);
     padding: 0.7rem 1.1rem;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-primary-contrast);
+    text-align: center;
     text-decoration: none;
     background: var(--color-primary);
-    border-radius: 999px;
+    border: 0;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .button:hover {
@@ -284,7 +436,7 @@ button:focus-visible {
     padding: 1.25rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
@@ -346,7 +498,7 @@ button:focus-visible {
     padding: 1.35rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
 }
 
@@ -397,14 +549,14 @@ button:focus-visible {
     color: var(--color-text);
     background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
 }
 
 .empty-state {
     padding: 2rem;
     background: var(--color-surface);
     border: 1px dashed var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
 }
 
 .empty-state h2 {
@@ -431,7 +583,7 @@ button:focus-visible {
     padding: 1.25rem 1.35rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
 }
 
 .detail-list__row {
