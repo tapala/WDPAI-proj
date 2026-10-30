@@ -10,6 +10,7 @@ return [
     'nav.home' => 'Strona główna',
     'nav.home_link' => 'Roomly — strona główna',
     'nav.language' => 'Wybór języka',
+    'nav.menu' => 'Menu główne',
     'home.eyebrow' => 'System rezerwacji sal i stanowisk',
     'home.title' => 'Zaplanuj spotkanie bez walki o salę',
     'home.lead' => 'Roomly porządkuje dostępność pomieszczeń, wyposażenie i rezerwacje w jednym miejscu.',

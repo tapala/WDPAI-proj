@@ -243,6 +243,24 @@ a:hover {
     margin-inline: auto;
 }
 
+.app-frame {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sidebar,
+.topbar {
+    display: none;
+}
+
+.nav-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
 .site-header {
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
@@ -945,6 +963,154 @@ a:hover {
 
 .room-equipment h2 {
     font-size: 1.15rem;
+}
+
+@media (min-width: 1024px) {
+    .skip-link {
+        z-index: 30;
+    }
+
+    .sidebar {
+        position: fixed;
+        inset-block: 0;
+        inset-inline-start: 0;
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        width: var(--sidebar-width);
+        padding: 27px 16px 24px;
+        overflow-y: auto;
+        background: var(--color-sidebar);
+    }
+
+    .sidebar__brand {
+        display: block;
+        padding-inline: 12px;
+        font-size: 25px;
+        font-weight: var(--font-weight-bold);
+        line-height: 1;
+        letter-spacing: -0.02em;
+        color: var(--color-sidebar-text-active);
+        text-decoration: none;
+    }
+
+    .sidebar__brand:hover {
+        color: var(--color-sidebar-text-active);
+    }
+
+    .sidebar__accent {
+        display: block;
+        width: 34px;
+        height: 4px;
+        margin: 20px 0 0 12px;
+        background: var(--color-primary);
+        border-radius: var(--radius-xs);
+    }
+
+    .sidebar__heading {
+        margin: 36px 0 12px;
+        padding-inline: 12px;
+        font-size: 0.625rem;
+        font-weight: var(--font-weight-semibold);
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--color-sidebar-heading);
+    }
+
+    .sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .sidebar__nav a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 44px;
+        padding: 0 14px;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-sidebar-text);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .sidebar__nav a:hover {
+        color: var(--color-sidebar-text-active);
+        background: rgb(255 255 255 / 4%);
+    }
+
+    .sidebar__nav a[aria-current="page"] {
+        color: var(--color-sidebar-text-active);
+        background: var(--color-sidebar-active);
+    }
+
+    .sidebar__footer {
+        margin-top: auto;
+        padding: 20px 12px 0;
+        border-top: 1px solid var(--color-sidebar-divider);
+    }
+
+    .language-switcher--dark a {
+        color: var(--color-sidebar-text);
+    }
+
+    .language-switcher--dark a:hover {
+        color: var(--color-sidebar-text-active);
+        background: rgb(255 255 255 / 5%);
+    }
+
+    .language-switcher--dark a[aria-current="true"] {
+        color: var(--color-sidebar-text-active);
+        background: var(--color-sidebar-active);
+    }
+
+    .site-header {
+        display: none;
+    }
+
+    .app-frame {
+        margin-inline-start: var(--sidebar-width);
+    }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        min-height: 78px;
+        padding-inline: var(--content-padding);
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .topbar__section {
+        margin: 0;
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .site-main {
+        padding: var(--content-padding);
+    }
+
+    .site-main .container {
+        width: 100%;
+        max-width: var(--container-width);
+        margin-inline: 0;
+    }
+
+    .site-footer {
+        padding-inline: var(--content-padding);
+    }
+
+    .site-footer .container {
+        width: 100%;
+        max-width: var(--container-width);
+        margin-inline: 0;
+    }
 }
 
 @media (max-width: 640px) {

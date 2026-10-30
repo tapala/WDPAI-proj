@@ -11,6 +11,9 @@ use App\Support\Html;
 /** @var string $currentPath */
 
 $currentPath = $currentPath ?? '/';
+$sectionLabel = str_starts_with($currentPath, '/rooms')
+    ? $translator->translate('nav.rooms')
+    : $translator->translate('nav.home');
 ?>
 <!doctype html>
 <html lang="<?= Html::escape($locale) ?>">
@@ -24,14 +27,22 @@ $currentPath = $currentPath ?? '/';
 <body>
     <a class="skip-link" href="#main-content"><?= Html::escape($translator->translate('nav.skip')) ?></a>
 
-    <?php require __DIR__ . '/partials/header.html.php'; ?>
+    <?php require __DIR__ . '/partials/sidebar.html.php'; ?>
 
-    <main id="main-content" class="site-main">
-        <div class="container">
-            <?= $content ?>
-        </div>
-    </main>
+    <div class="app-frame">
+        <?php require __DIR__ . '/partials/header.html.php'; ?>
 
-    <?php require __DIR__ . '/partials/footer.html.php'; ?>
+        <header class="topbar">
+            <p class="topbar__section"><?= Html::escape($sectionLabel) ?></p>
+        </header>
+
+        <main id="main-content" class="site-main">
+            <div class="container">
+                <?= $content ?>
+            </div>
+        </main>
+
+        <?php require __DIR__ . '/partials/footer.html.php'; ?>
+    </div>
 </body>
 </html>

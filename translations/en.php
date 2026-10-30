@@ -10,6 +10,7 @@ return [
     'nav.home' => 'Home',
     'nav.home_link' => 'Roomly — home page',
     'nav.language' => 'Language selection',
+    'nav.menu' => 'Main menu',
     'home.eyebrow' => 'Room and workstation reservation system',
     'home.title' => 'Plan your meeting without fighting over a room',
     'home.lead' => 'Roomly brings room availability, equipment and reservations together in one place.',
