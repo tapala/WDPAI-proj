@@ -39,7 +39,7 @@ $sectionLabel = $sectionLabel ?? match (true) {
             <p class="topbar__section"><?= Html::escape($sectionLabel) ?></p>
         </header>
 
-        <main id="main-content" class="site-main">
+        <main id="main-content" class="site-main" tabindex="-1">
             <div class="container">
                 <?= $content ?>
             </div>

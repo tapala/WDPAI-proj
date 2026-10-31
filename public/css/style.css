@@ -198,6 +198,12 @@ a:hover {
     outline-offset: 2px;
 }
 
+/* The skip link focuses main for screen readers; outlining the whole page
+   would only add visual noise. */
+#main-content:focus {
+    outline: none;
+}
+
 ::selection {
     color: var(--color-text);
     background: var(--color-primary-soft);
@@ -296,6 +302,9 @@ a:hover {
 }
 
 .language-switcher a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
     padding: 0.25rem 0.5rem;
     color: var(--color-muted);
     text-decoration: none;
@@ -747,6 +756,12 @@ a:hover {
     margin: 0;
 }
 
+.site-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+}
+
 /* Catalogue header — Figma "Przeglądaj sale": 28px heading over a 13px lead. */
 .catalogue-head h1 {
     margin: 0;
@@ -836,7 +851,7 @@ a:hover {
     min-height: 36px;
     padding: 0 34px 0 14px;
     font: inherit;
-    font-size: var(--font-size-2xs);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     color: var(--color-text);
     background-color: var(--color-surface);
@@ -1168,6 +1183,9 @@ a:hover {
 }
 
 .breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     color: var(--color-muted);
 }
 

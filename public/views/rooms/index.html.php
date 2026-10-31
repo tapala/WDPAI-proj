@@ -137,9 +137,9 @@ if ($filter->minimumCapacity !== null && !in_array($filter->minimumCapacity, $ca
                 <div class="room-card__body">
                     <p class="room-card__badge"><?= Html::escape($translator->translate('rooms.kind.' . $room->kind)) ?></p>
 
-                    <h2 class="room-card__name">
+                    <h3 class="room-card__name">
                         <a class="room-card__link" href="/rooms/<?= Html::escape($room->id) ?>"><?= Html::escape($room->name) ?></a>
-                    </h2>
+                    </h3>
 
                     <p class="room-card__location"><?= Html::escape($room->location) ?></p>
                     <p class="room-card__meta"><?= Html::escape(implode(' · ', $meta)) ?></p>
