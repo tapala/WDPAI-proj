@@ -30,7 +30,6 @@ final class RoomController extends AppController
             'currentPath' => '/rooms',
             'rooms' => $filter->apply($allRooms),
             'filter' => $filter,
-            'totalRooms' => count($allRooms),
         ]);
     }
 

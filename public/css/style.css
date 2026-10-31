@@ -763,21 +763,138 @@ a:hover {
     margin: 0;
 }
 
-.page-head {
-    max-width: 760px;
+/* Catalogue header — Figma "Przeglądaj sale": 28px heading over a 13px lead. */
+.catalogue-head h1 {
+    margin: 0;
+    font-size: clamp(var(--font-size-5xl), 2.4vw, var(--font-size-6xl));
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.02em;
 }
 
-.filter-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    align-items: end;
-    margin-block: 2rem 1.1rem;
-    padding: 1.25rem;
+.catalogue-head__lead {
+    margin: 6px 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+}
+
+.catalogue-filters {
+    margin-top: 28px;
+}
+
+.catalogue-filters__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.search-control {
+    position: relative;
+    flex: 1 1 320px;
+    max-width: 720px;
+}
+
+.search-control__icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.search-control__input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 16px 0 42px;
+    font: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
+    border-radius: var(--radius-md);
+    appearance: none;
+    transition: border-color var(--transition-fast);
+}
+
+.search-control__input::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+}
+
+.search-control__input:hover {
+    border-color: var(--color-border-strong);
+}
+
+.search-control__input:focus {
+    border-color: var(--color-primary);
+}
+
+.catalogue-filters__submit {
+    flex: none;
+    width: 210px;
+    min-height: 46px;
+}
+
+.filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-top: 16px;
+}
+
+.filter-pill select {
+    min-width: 176px;
+    min-height: 36px;
+    padding: 0 34px 0 14px;
+    font: inherit;
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23667085' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m1.5 2 4.5 4 4.5-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 10px 7px;
+    border: 1px solid var(--color-border);
+    border-radius: 9px;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+}
+
+.filter-pill select:hover {
+    border-color: var(--color-border-strong);
+}
+
+.filter-pill select:focus {
+    border-color: var(--color-primary);
+}
+
+.filter-pills__reset {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary);
+}
+
+.filter-pills__reset:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.results-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin: 26px 0 22px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-snug);
 }
 
 .field {
@@ -847,24 +964,6 @@ a:hover {
     font-size: var(--font-size-2xs);
     font-weight: var(--font-weight-medium);
     color: var(--color-danger);
-}
-
-.filter-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.link-subtle {
-    font-size: 0.92rem;
-    color: var(--color-muted);
-}
-
-.results {
-    margin: 0 0 1rem;
-    font-size: 0.92rem;
-    color: var(--color-muted);
 }
 
 .room-grid {
@@ -1148,6 +1247,34 @@ a:hover {
 }
 
 @media (max-width: 640px) {
+    .catalogue-filters__top {
+        align-items: stretch;
+    }
+
+    .search-control {
+        flex-basis: 100%;
+        max-width: none;
+    }
+
+    .catalogue-filters__submit {
+        width: 100%;
+    }
+
+    .filter-pills {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-pill select {
+        width: 100%;
+        min-height: 42px;
+    }
+
+    .filter-pills__reset {
+        align-self: flex-start;
+        padding-block: 4px;
+    }
+
     .detail-list__row {
         flex-direction: column;
         gap: 0.15rem;

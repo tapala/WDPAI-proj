@@ -12,7 +12,7 @@ use App\Support\Html;
 
 $currentPath = $currentPath ?? '/';
 $sectionLabel = str_starts_with($currentPath, '/rooms')
-    ? $translator->translate('nav.rooms')
+    ? $translator->translate('rooms.topbar')
     : $translator->translate('nav.home');
 ?>
 <!doctype html>

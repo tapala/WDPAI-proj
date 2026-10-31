@@ -61,4 +61,26 @@ final class Translator
 
         return $message;
     }
+
+    /**
+     * Translates a count-aware message.
+     *
+     * Translation files define `key.one`, `key.few` and `key.many`. English only
+     * needs `one` and `many`; Polish also uses `few` for 2–4 except 12–14.
+     *
+     * @param array<string, string|int|float> $parameters
+     */
+    public function translateCount(string $key, int $count, array $parameters = []): string
+    {
+        $form = match (true) {
+            $count === 1 => 'one',
+            $this->locale === 'pl'
+                && $count % 10 >= 2
+                && $count % 10 <= 4
+                && ($count % 100 < 12 || $count % 100 > 14) => 'few',
+            default => 'many',
+        };
+
+        return $this->translate($key . '.' . $form, ['count' => $count] + $parameters);
+    }
 }
