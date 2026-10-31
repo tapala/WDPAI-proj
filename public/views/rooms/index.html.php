@@ -106,25 +106,44 @@ if ($filter->minimumCapacity !== null && !in_array($filter->minimumCapacity, $ca
         <p><a class="button" href="/rooms"><?= Html::escape($translator->translate('rooms.filters.reset')) ?></a></p>
     </section>
 <?php else: ?>
+    <?php
+    // Colour placeholders stand in for room photos until the upload module
+    // (Lab 13) provides real images.
+    $thumbVariants = ['blue', 'sand', 'green', 'lilac'];
+    ?>
     <div class="room-grid">
-        <?php foreach ($rooms as $room): ?>
-            <article class="room-card">
-                <p class="room-kind"><?= Html::escape($translator->translate('rooms.kind.' . $room->kind)) ?></p>
-                <h2 class="room-name">
-                    <a href="/rooms/<?= Html::escape($room->id) ?>"><?= Html::escape($room->name) ?></a>
-                </h2>
-                <p class="room-location"><?= Html::escape($room->location) ?></p>
-                <p class="room-capacity">
-                    <?= Html::escape($translator->translate('rooms.card.capacity', ['count' => $room->capacity])) ?>
-                </p>
+        <?php foreach ($rooms as $index => $room): ?>
+            <?php
+            $meta = [$translator->translateCount('rooms.card.seats', $room->capacity)];
+            foreach ($room->equipment as $equipmentKey) {
+                $meta[] = $translator->translate($equipmentKey);
+            }
 
-                <?php if ($room->equipment !== []): ?>
-                    <ul class="tag-list" aria-label="<?= Html::escape($translator->translate('rooms.details.equipment')) ?>">
-                        <?php foreach ($room->equipment as $equipmentKey): ?>
-                            <li><?= Html::escape($translator->translate($equipmentKey)) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php endif; ?>
+            // The colour follows the card position so neighbouring cards never
+            // share a shade; it is decorative, not room data.
+            $thumbVariant = $thumbVariants[$index % count($thumbVariants)];
+            ?>
+            <article class="room-card">
+                <div class="room-card__photo room-card__photo--<?= Html::escape($thumbVariant) ?>" aria-hidden="true"></div>
+
+                <div class="room-card__body">
+                    <p class="room-card__badge"><?= Html::escape($translator->translate('rooms.kind.' . $room->kind)) ?></p>
+
+                    <h2 class="room-card__name">
+                        <a class="room-card__link" href="/rooms/<?= Html::escape($room->id) ?>"><?= Html::escape($room->name) ?></a>
+                    </h2>
+
+                    <p class="room-card__location"><?= Html::escape($room->location) ?></p>
+                    <p class="room-card__meta"><?= Html::escape(implode(' · ', $meta)) ?></p>
+
+                    <span class="room-card__more" aria-hidden="true">
+                        <?= Html::escape($translator->translate('rooms.card.details')) ?>
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <path d="M2.5 8h11"/>
+                            <path d="m9.5 4 4 4-4 4"/>
+                        </svg>
+                    </span>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>
