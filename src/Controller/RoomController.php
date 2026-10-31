@@ -43,7 +43,7 @@ final class RoomController extends AppController
 
         $this->render('rooms/show', [
             'title' => $room->name,
-            'currentPath' => '/rooms',
+            'currentPath' => '/rooms/' . $room->id,
             'room' => $room,
         ]);
     }

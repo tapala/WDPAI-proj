@@ -11,9 +11,11 @@ use App\Support\Html;
 /** @var string $currentPath */
 
 $currentPath = $currentPath ?? '/';
-$sectionLabel = str_starts_with($currentPath, '/rooms')
-    ? $translator->translate('rooms.topbar')
-    : $translator->translate('nav.home');
+$sectionLabel = match (true) {
+    $currentPath === '/rooms' => $translator->translate('rooms.topbar'),
+    str_starts_with($currentPath, '/rooms') => $translator->translate('rooms.details.topbar'),
+    default => $translator->translate('nav.home'),
+};
 ?>
 <!doctype html>
 <html lang="<?= Html::escape($locale) ?>">
