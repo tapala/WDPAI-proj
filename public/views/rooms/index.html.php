@@ -100,10 +100,18 @@ if ($filter->minimumCapacity !== null && !in_array($filter->minimumCapacity, $ca
 </h2>
 
 <?php if ($rooms === []): ?>
-    <section class="empty-state" aria-labelledby="rooms-empty-title">
+    <section class="state-card state-card--empty" aria-labelledby="rooms-empty-title">
+        <span class="state-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="6.5"/>
+                <path d="m20 20-4.2-4.2"/>
+            </svg>
+        </span>
         <h2 id="rooms-empty-title"><?= Html::escape($translator->translate('rooms.empty.title')) ?></h2>
-        <p><?= Html::escape($translator->translate('rooms.empty.message')) ?></p>
-        <p><a class="button" href="/rooms"><?= Html::escape($translator->translate('rooms.filters.reset')) ?></a></p>
+        <p class="state-card__text"><?= Html::escape($translator->translate('rooms.empty.message')) ?></p>
+        <div class="state-card__actions">
+            <a class="button" href="/rooms"><?= Html::escape($translator->translate('rooms.filters.reset')) ?></a>
+        </div>
     </section>
 <?php else: ?>
     <?php

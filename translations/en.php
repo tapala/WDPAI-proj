@@ -76,6 +76,8 @@ return [
     'footer.note' => 'WDPAI 26/27 semester project.',
     'footer.figma' => 'Figma design',
     'error.back_home' => 'Back to home page',
+    'error.browse_rooms' => 'Browse rooms',
+    'error.topbar' => 'Error',
     'error.400.title' => 'Bad request',
     'error.400.message' => 'The address contains an invalid parameter.',
     'error.404.title' => 'Page not found',

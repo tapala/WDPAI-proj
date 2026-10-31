@@ -62,6 +62,7 @@ try {
         'status' => $status,
         'message' => $translator->translate('error.' . $status . '.message'),
         'currentPath' => $currentPath,
+        'sectionLabel' => $translator->translate('error.topbar'),
     ]);
 } catch (Throwable $exception) {
     error_log(sprintf(
@@ -79,5 +80,6 @@ try {
         'status' => 500,
         'message' => $translator->translate('error.500.message'),
         'currentPath' => $currentPath,
+        'sectionLabel' => $translator->translate('error.topbar'),
     ]);
 }

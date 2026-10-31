@@ -8,10 +8,11 @@ use App\Support\Html;
 /** @var string $locale */
 /** @var string $title */
 /** @var App\Support\Translator $translator */
+/** @var string|null $sectionLabel */
 /** @var string $currentPath */
 
 $currentPath = $currentPath ?? '/';
-$sectionLabel = match (true) {
+$sectionLabel = $sectionLabel ?? match (true) {
     $currentPath === '/rooms' => $translator->translate('rooms.topbar'),
     str_starts_with($currentPath, '/rooms') => $translator->translate('rooms.details.topbar'),
     default => $translator->translate('nav.home'),

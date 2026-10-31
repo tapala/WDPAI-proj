@@ -78,6 +78,8 @@ return [
     'footer.note' => 'Projekt semestralny WDPAI 26/27.',
     'footer.figma' => 'Projekt graficzny w Figmie',
     'error.back_home' => 'Wróć na stronę główną',
+    'error.browse_rooms' => 'Przeglądaj sale',
+    'error.topbar' => 'Błąd',
     'error.400.title' => 'Nieprawidłowe żądanie',
     'error.400.message' => 'Adres zawiera nieprawidłowy parametr.',
     'error.404.title' => 'Nie znaleziono strony',
