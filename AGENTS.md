@@ -5,8 +5,8 @@
 >
 > **Repozytorium:** `tapala/WDPAI-proj`
 > **Kurs:** Projektowanie aplikacji internetowych 26/27
-> **Wersja dokumentu:** 2026-11-18
-> **Aktualny etap:** Laboratorium 2 ukończone — działają front controller, router, layout, strona główna, katalog sal `/rooms` i `/rooms/{id}` oraz testy jednostkowe.
+> **Wersja dokumentu:** 2026-11-19
+> **Aktualny etap:** Laboratorium 3 ukończone — interfejs oparty na Figmie: tokeny, powłoka desktop/mobile, katalog z filtrami, karty sal, szczegóły, stany puste i błędów, QA dostępności. Brakuje bazy, logowania, rezerwacji i JavaScriptu.
 
 ---
 
@@ -99,15 +99,16 @@ Figma jest **głównym źródłem prawdy** dla wyglądu: kolorystyki, typografii
 
 ### 2.6. Aktualny etap
 
-Aktualny stan (2026-11-18):
+Aktualny stan (2026-11-19):
 
 - temat i model domenowy Roomly są opisane w `Projekt.txt` oraz w tym pliku;
 - istnieje konfiguracja Docker Compose z usługami `server`, `php`, `db`, `ollama`, `mailpit`, `pgadmin-wdpai`;
 - działa front controller `public/index.php`, router `App\Routing`, `AppController`, `View`, `Translator` oraz strona główna z layoutem i przełączaniem PL/EN;
 - `composer.json` z mapowaniem PSR-4 `App\` → `src/` i wygenerowany autoloader są gotowe;
-- trasy domenowe `/rooms` (filtry `q`, `kind`, `min_capacity`, `sort`) i `/rooms/{id}` działają na danych z `InMemoryRoomRepository`;
-- testy jednostkowe routingu i filtra sal uruchamiane przez PHPUnit;
-- brakuje schematu bazy, danych demo w SQL, uwierzytelniania, JavaScriptu i pełnego designu z Figmy.
+- interfejs z Figmy: tokeny i komponenty w `public/css/style.css`, sidebar + topbar na desktopie, dolna nawigacja na mobile, katalog `/rooms` z wyszukiwaniem i filtrami, karty sal, szczegóły `/rooms/{id}`, stany puste i błędy `400`/`404`/`500`;
+- testy jednostkowe routingu, filtra sal, repozytorium w pamięci i odmiany PL/EN (PHPUnit, 38 testów);
+- README zawiera zrzuty ekranu, architekturę, routing, raport WCAG i Security Bingo;
+- brakuje schematu bazy i danych SQL, uwierzytelniania, rezerwacji, JavaScriptu/Fetch, panelu administratora, uploadu zdjęć, e-maili/CRON, motywu ciemnego i wdrożenia.
 
 To nie jest jeszcze działająca aplikacja domenowa. Agent ma ją rozwijać zgodnie z roadmapą, nie opisywać jako ukończoną.
 
@@ -644,15 +645,17 @@ To lista startowa. Nie traktuj jej jako wymówki — to zadania do wykonania w p
 
 | Problem | Dlaczego ważne | Docelowo |
 |---|---|---|
-| Brak wdrożenia projektu Figma | Kryterium 16 wymaga spójnego, przygotowanego wyglądu | Przenieść tokeny i komponenty z Figmy do `public/css/style.css`; przy braku dostępu poprosić o eksport |
-| README jest tylko częściowo uzupełnione | Kryterium 1 wymaga pełnej dokumentacji | Uzupełnić screenshoty, ERD, testy, WCAG, Security Bingo i deploy (Lab 14) |
 | `pg-data` jest zadeklarowany, ale nie podłączony do `db` | Dane bazy nie są trwałe | Zamontować `pg-data:/var/lib/postgresql/data` |
 | Init SQL montowany z `./docker/db`, gdzie jest Dockerfile | PostgreSQL nie wykona Dockerfile'a jako SQL | Przenieść skrypty do `database/` i montować `./database:/docker-entrypoint-initdb.d:ro` |
 | Brak healthchecka `db` i `depends_on` | PHP może startować przed bazą | Dodać healthcheck i `depends_on: condition: service_healthy` |
 | Kontener `php` nie dostaje zmiennych `DB_*` | Aplikacja nie ma z czego zbudować połączenia PDO | Przekazać `DB_*` w sekcji `environment` usługi `php` i czytać je w `src/Database.php` |
 | Brak schematu bazy i danych SQL | Kryteria 10–12 niezrealizowane | Dodać `database/01-schema.sql`, `database/02-seed.sql` i repozytorium PDO (Lab 7) |
 | Brak uwierzytelniania i ról | Kryteria 20–24 niezrealizowane | Dodać logowanie, sesję, `USER`/`ADMIN` i autoryzację (Lab 9) |
-| Brak motywu i JavaScriptu; i18n ma tylko bazowy przełącznik PL/EN | Kryteria 14, 18, 19 niezrealizowane | Dodać `theme.js`, `validation.js` i pełne tłumaczenia walidacji |
+| Brak JavaScriptu, Fetch API i motywu ciemnego | Kryteria 14, 15, 18 | Dodać `theme.js`, walidację klienta, endpointy JSON i Fetch (Lab 10–12) |
+| Brak rezerwacji i panelu administratora | Główny proces biznesowy i kryteria 8, 25–26 | Zbudować moduł rezerwacji po bazie i logowaniu (Lab 7–12) |
+| Szczegóły sali bez formularza rezerwacji i galerii | Kryteria 8, 34 | Panel rezerwacji po module rezerwacji; upload zdjęć w Lab 13 |
+| Brak e-maili i CRON | Kryteria 32–33 | `MailService` i `bin/cron.php` (Lab 13) |
+| Brak wdrożenia | Kryterium 36 | `compose.production.yaml` i publiczny deploy (Lab 14) |
 
 Po naprawie danej luki usuń ją z tej tabeli albo oznacz jako zrobioną w commitcie.
 
@@ -821,4 +824,4 @@ Ten plik jest żywym dokumentem. Aktualizuj go, gdy:
 
 Nie kopiuj do niego całego README ani całych laboratoriów. Trzymaj tu **operacyjne zasady**, a szczegóły produktu w `README.md`.
 
-**Ostatnia aktualizacja:** 2026-11-18
+**Ostatnia aktualizacja:** 2026-11-19
