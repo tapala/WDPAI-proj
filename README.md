@@ -12,11 +12,12 @@ Projekt semestralny z przedmiotu **Projektowanie aplikacji internetowych 26/27**
 
 W typowej firmie lub na uczelni rezerwacja sali odbywa się przez kilka kanałów: arkusze, e-maile i ustne ustalenia. Trudno sprawdzić, czy sala jest wolna, jakie ma wyposażenie i kto odpowiada za dany termin. Roomly ma połączyć katalog pomieszczeń, filtrowanie, dostępność i rezerwacje w jednym miejscu.
 
-### Co działa w obecnej wersji (Laboratorium 3)
+### Co działa w obecnej wersji (Laboratorium 5)
 
 - Front controller, router (`GET`, `POST`, `PATCH`, `DELETE`), parametry ścieżki z walidacją, własne wzorce regex, kontrolowane `400` i `404`.
 - Tłumaczenia PL/EN z zapamiętaniem języka w sesji; przełącznik zachowuje filtry.
 - Powłoka aplikacji: stały sidebar i topbar na desktopie, dolna nawigacja na mobile.
+- Motyw jasny/ciemny: wybór z systemu, przełącznik w sidebarze i nagłówku mobilnym, zapamiętanie wyboru w `localStorage`, brak migotania przy ładowaniu.
 - Strona główna z informacją o etapie prac.
 - Katalog `/rooms`: wyszukiwanie po nazwie i lokalizacji, filtr typu, progi pojemności, sortowanie, licznik wyników z odmianą, stan „brak wyników” i czyszczenie filtrów.
 - Szczegóły `/rooms/{id}`: podsumowanie, opis, wyposażenie w formie chipów, powrót do katalogu.
@@ -28,11 +29,11 @@ W typowej firmie lub na uczelni rezerwacja sali odbywa się przez kilka kanałó
 
 - Schemat PostgreSQL, dane demo SQL i repozytoria PDO (Lab 7).
 - Rejestracja, logowanie, role `USER`/`ADMIN`, sesja (Lab 9).
-- JavaScript, walidacja po stronie klienta i Fetch API (Lab 10–11).
+- Walidacja po stronie klienta i Fetch API (Lab 10–11).
 - Rezerwacje z ochroną przed nakładaniem się terminów (Lab 7–12).
 - Panel administratora, „Moje rezerwacje”, profil — po dodaniu bazy i logowania.
 - Galeria sal, upload zdjęć, e-maile i CRON (Lab 13).
-- Motyw ciemny/jasny oraz pełny audyt WCAG (Lab 5, 14).
+- Pełny audyt WCAG z rzeczywistym czytnikiem ekranu (Lab 14).
 - Wdrożenie publiczne (Lab 14).
 
 ## Stack technologiczny
@@ -42,14 +43,14 @@ W typowej firmie lub na uczelni rezerwacja sali odbywa się przez kilka kanałó
 | Backend | PHP 8.3, MVC bez frameworka, Composer PSR-4, `strict_types` |
 | Serwer HTTP | Nginx + PHP-FPM |
 | Baza danych | PostgreSQL 16 (kontener gotowy; aplikacja jeszcze nie korzysta) |
-| Frontend | HTML5, CSS3 z tokenami; JavaScript bez frameworka (Lab 10–11) |
+| Frontend | HTML5, CSS3 z tokenami, JavaScript bez frameworka (motyw; Fetch w Lab 10–11) |
 | Testy | PHPUnit 11 |
 | E-mail | PHPMailer + SMTP, lokalnie Mailpit (planowane, Lab 13) |
 | Konteneryzacja | Docker, Docker Compose |
 
 ## Zrzuty ekranu
 
-Zrzuty wykonano na działającej aplikacji: desktop 1440×1000, mobile 390×844.
+Zrzuty wykonano na działającej aplikacji: desktop 1440×1000, mobile 390×844, w obu motywach.
 
 | Widok | Desktop | Mobile |
 |---|---|---|
@@ -58,6 +59,22 @@ Zrzuty wykonano na działającej aplikacji: desktop 1440×1000, mobile 390×844.
 | Szczegóły sali | <img src="docs/screenshots/web-room-details.png" alt="Szczegóły sali — desktop" width="480"> | <img src="docs/screenshots/mobile-room-details.png" alt="Szczegóły sali — mobile" width="160"> |
 | Brak wyników | <img src="docs/screenshots/web-empty-results.png" alt="Brak wyników — desktop" width="480"> | <img src="docs/screenshots/mobile-empty-results.png" alt="Brak wyników — mobile" width="160"> |
 | Błąd 404 | <img src="docs/screenshots/web-error-404.png" alt="Błąd 404 — desktop" width="480"> | <img src="docs/screenshots/mobile-error-404.png" alt="Błąd 404 — mobile" width="160"> |
+
+### Motyw ciemny
+
+| Widok | Desktop | Mobile |
+|---|---|---|
+| Katalog sal | <img src="docs/screenshots/web-catalogue-dark.png" alt="Katalog sal w ciemnym motywie — desktop" width="480"> | <img src="docs/screenshots/mobile-catalogue-dark.png" alt="Katalog sal w ciemnym motywie — mobile" width="160"> |
+| Szczegóły sali | <img src="docs/screenshots/web-room-details-dark.png" alt="Szczegóły sali w ciemnym motywie — desktop" width="480"> | <img src="docs/screenshots/mobile-room-details-dark.png" alt="Szczegóły sali w ciemnym motywie — mobile" width="160"> |
+
+## Motyw jasny/ciemny
+
+- Pierwsze wejście wybiera motyw na podstawie `prefers-color-scheme`.
+- Wybór użytkownika zapisuje się w `localStorage` pod kluczem `roomly-theme` i ma pierwszeństwo przed systemem.
+- Przełącznik znajduje się w stopce sidebara (desktop) oraz w nagłówku (mobile); ma `aria-pressed` i dynamiczny `aria-label`.
+- `public/js/theme-init.js` wykonuje się w `<head>` przed arkuszem CSS, więc nie ma migotania (FOUC). `public/js/theme.js` obsługuje przełączanie i zmiany preferencji systemowej.
+- Motyw ustawia `data-theme` na `<html>` oraz `color-scheme`, dzięki czemu natywne kontrolki również zmieniają wygląd.
+- Bez JavaScriptu strona działa w motywie jasnym, a przełącznik jest ukryty.
 
 ## Architektura
 
@@ -101,6 +118,9 @@ Zależności są przekazywane przez konstruktory i składane w jednym miejscu �
 │   └── screenshots/          # zrzuty z README
 ├── public/
 │   ├── css/style.css         # tokeny, komponenty, layout, stany
+│   ├── js/
+│   │   ├── theme-init.js     # anty-FOUC, wybór motywu przed CSS
+│   │   └── theme.js          # przełącznik, localStorage, preferencja systemowa
 │   ├── index.php             # jedyny punkt wejścia
 │   └── views/
 │       ├── layout.html.php
@@ -260,9 +280,9 @@ Testy nie wymagają bazy danych.
 
 ## Raport WCAG
 
-**Data:** 2026-11-19 · **Zakres:** strona główna, katalog, szczegóły, brak wyników, 404 · **Szerokości:** 320, 390, 768, 1024, 1440 px.
+**Data:** 2026-11-20 · **Zakres:** strona główna, katalog, szczegóły, brak wyników, 404 · **Szerokości:** 320, 390, 768, 1024, 1440 px · **Motywy:** jasny i ciemny.
 
-Metoda: testy manualne (klawiatura, skip link, fokus, responsywność) oraz skryptowy audyt DOM i kontrastu w Chrome. To nie jest formalna certyfikacja WCAG — pełny audyt z narzędziami zewnętrznymi zaplanowano na Laboratorium 14.
+Metoda: testy manualne (klawiatura, skip link, fokus, responsywność), skryptowy audyt DOM i kontrastu w Chrome (5 widoków × 2 motywy) oraz Lighthouse. To nie jest formalna certyfikacja WCAG — pełny audyt z rzeczywistym czytnikiem ekranu zaplanowano na Laboratorium 14.
 
 | Kryterium | Wynik |
 |---|---|
@@ -271,18 +291,20 @@ Metoda: testy manualne (klawiatura, skip link, fokus, responsywność) oraz skry
 | Formularze | Wszystkie pola mają etykiety (w filtrach ukryte wizualnie) |
 | Klawiatura | Pełna obsługa; logiczna kolejność Tab; brak pułapek fokusa |
 | Skip link | „Przejdź do treści” przenosi fokus do `main` |
-| Widoczny fokus | Obrys 3 px `#6257d9`; na ciemnym sidebarze kontrast 3.2:1 |
-| Kontrast tekstu | 0 błędów w audycie 5 widoków (4.5:1 dla tekstu, 3:1 dla dużego) |
+| Widoczny fokus | 3 px w obu motywach; na ciemnym sidebarze min. 3.2:1 |
+| Kontrast tekstu | 0 błędów w 10 przebiegach (5 widoków × 2 motywy) |
+| Motyw | Wybór systemowy, przełącznik, `localStorage`, `aria-pressed`, anty-FOUC |
+| Lighthouse | Accessibility 1.0, Best Practices 1.0, SEO 1.0 (jasny i ciemny) |
 | Reflow 320 px | Brak poziomego przewijania |
 | Cele dotykowe | Min. 24 px; linki kart wykorzystują całą powierzchnię karty |
 | `prefers-reduced-motion` | Animacje i przejścia wyłączone |
 | Język | `<html lang>`, `lang` na linkach PL/EN, tłumaczenia komunikatów |
 
-Znane luki: brak motywu ciemnego, brak audytu z axe/Lighthouse, brak testów z rzeczywistym czytnikiem ekranu.
+Znane luki: brak testów z rzeczywistym czytnikiem ekranu; Lighthouse nie zastępuje testu z użytkownikiem.
 
 ## Security Bingo
 
-Tabela pokazuje stan faktyczny na koniec Laboratorium 3. Pozycje „planowane” nie są zaimplementowane.
+Tabela pokazuje stan faktyczny na koniec Laboratorium 5. Pozycje „planowane” nie są zaimplementowane.
 
 | Obszar | Status | Dowód / uwagi |
 |---|---|---|
@@ -314,7 +336,7 @@ Brak wdrożenia publicznego. Projekt uruchamiany jest lokalnie przez Docker Comp
 - Strona główna jest tymczasową stroną informacyjną; dashboard z Figmy wymaga danych o rezerwacjach.
 - Zdjęcia sal to kolorowe placeholdery; galeria i upload w Lab 13.
 - Szczegóły sali nie mają jeszcze formularza rezerwacji ani kalendarza dostępności.
-- Brak JavaScriptu, motywu ciemnego i pełnego audytu WCAG.
+- Brak walidacji klienta i Fetch API; brak testów z rzeczywistym czytnikiem ekranu.
 - Nazwy i opisy danych demo są po polsku również w wersji EN — to dane, nie teksty interfejsu.
 
 ## Zasady developmentu
