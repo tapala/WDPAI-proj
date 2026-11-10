@@ -22,9 +22,14 @@ use App\Support\Html;
     </nav>
 
     <div class="sidebar__footer">
-        <?php
-        $languageSwitcherClass = 'language-switcher--dark';
-        require __DIR__ . '/language-switcher.html.php';
-        ?>
+        <div class="sidebar__tools">
+            <?php
+            $themeToggleClass = 'theme-toggle--dark';
+            require __DIR__ . '/theme-toggle.html.php';
+
+            $languageSwitcherClass = 'language-switcher--dark';
+            require __DIR__ . '/language-switcher.html.php';
+            ?>
+        </div>
     </div>
 </aside>

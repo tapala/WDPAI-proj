@@ -25,7 +25,9 @@ $sectionLabel = $sectionLabel ?? match (true) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= Html::escape($translator->translate('app.description')) ?>">
     <title><?= Html::escape($title) ?></title>
+    <script src="/js/theme-init.js"></script>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/theme.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#main-content"><?= Html::escape($translator->translate('nav.skip')) ?></a>
