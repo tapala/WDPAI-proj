@@ -281,6 +281,12 @@ a:hover {
     padding-inline: 6px;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .brand {
     font-size: 22px;
     font-weight: var(--font-weight-bold);
@@ -324,6 +330,26 @@ a:hover {
 .language-switcher--header a[aria-current="true"] {
     color: var(--color-primary);
     background: transparent;
+}
+
+.header-login {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 4px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.header-login:hover {
+    color: var(--color-primary);
+}
+
+.header-login[aria-current="page"] {
+    color: var(--color-primary);
 }
 
 .mobile-nav {
@@ -965,6 +991,81 @@ a:hover {
     color: var(--color-danger);
 }
 
+/* Demo sign-in — no Figma frame for auth yet; built from shared tokens. */
+.auth-card {
+    max-width: 480px;
+    margin-inline: auto;
+    padding: 32px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+}
+
+.auth-card h1 {
+    margin: 0;
+    font-size: var(--font-size-5xl);
+    line-height: 1.2;
+}
+
+.auth-card .notice {
+    margin-top: 18px;
+    font-size: var(--font-size-sm);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.auth-form .button {
+    margin-top: 4px;
+}
+
+.auth-card__back {
+    margin: 20px 0 0;
+    font-size: var(--font-size-sm);
+}
+
+.form-errors {
+    margin-top: 18px;
+    padding: 12px 14px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    background: var(--color-danger-soft);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-md);
+}
+
+.form-errors__title {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+}
+
+.form-errors ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.form-errors a {
+    color: var(--color-danger);
+}
+
+.form-flash {
+    margin-top: 18px;
+    padding: 12px 14px;
+    font-size: var(--font-size-sm);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+}
+
+.form-flash--info {
+    color: var(--color-info-strong);
+    background: var(--color-info-soft);
+    border-color: var(--color-info);
+}
+
 .room-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1395,6 +1496,30 @@ a:hover {
         border-top: 1px solid var(--color-sidebar-divider);
     }
 
+    .sidebar__login {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 40px;
+        margin: 0 -12px 10px;
+        padding: 0 14px;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-sidebar-text);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+    }
+
+    .sidebar__login:hover {
+        color: var(--color-sidebar-text-active);
+        background: rgb(255 255 255 / 4%);
+    }
+
+    .sidebar__login[aria-current="page"] {
+        color: var(--color-sidebar-text-active);
+        background: var(--color-sidebar-active);
+    }
+
     .language-switcher--dark a {
         color: var(--color-sidebar-text);
     }
@@ -1497,6 +1622,10 @@ a:hover {
 
     .state-card {
         padding: 28px 22px;
+    }
+
+    .auth-card {
+        padding: 24px 20px;
     }
 }
 
