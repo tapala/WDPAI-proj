@@ -5,8 +5,8 @@
 >
 > **Repozytorium:** `tapala/WDPAI-proj`
 > **Kurs:** Projektowanie aplikacji internetowych 26/27
-> **Wersja dokumentu:** 2026-11-19
-> **Aktualny etap:** Laboratorium 3 ukończone — interfejs oparty na Figmie: tokeny, powłoka desktop/mobile, katalog z filtrami, karty sal, szczegóły, stany puste i błędów, QA dostępności. Brakuje bazy, logowania, rezerwacji i JavaScriptu.
+> **Wersja dokumentu:** 2026-11-20
+> **Aktualny etap:** Laboratorium 6 ukończone — formularze demo z walidacją, CSRF i PRG. Brakuje bazy, realnego logowania, rezerwacji i JavaScriptu; motyw ciemny jest na branchu Lab 5.
 
 ---
 
@@ -99,16 +99,17 @@ Figma jest **głównym źródłem prawdy** dla wyglądu: kolorystyki, typografii
 
 ### 2.6. Aktualny etap
 
-Aktualny stan (2026-11-19):
+Aktualny stan (2026-11-20):
 
 - temat i model domenowy Roomly są opisane w `Projekt.txt` oraz w tym pliku;
 - istnieje konfiguracja Docker Compose z usługami `server`, `php`, `db`, `ollama`, `mailpit`, `pgadmin-wdpai`;
 - działa front controller `public/index.php`, router `App\Routing`, `AppController`, `View`, `Translator` oraz strona główna z layoutem i przełączaniem PL/EN;
 - `composer.json` z mapowaniem PSR-4 `App\` → `src/` i wygenerowany autoloader są gotowe;
 - interfejs z Figmy: tokeny i komponenty w `public/css/style.css`, sidebar + topbar na desktopie, dolna nawigacja na mobile, katalog `/rooms` z wyszukiwaniem i filtrami, karty sal, szczegóły `/rooms/{id}`, stany puste i błędy `400`/`404`/`500`;
-- testy jednostkowe routingu, filtra sal, repozytorium w pamięci i odmiany PL/EN (PHPUnit, 38 testów);
-- README zawiera zrzuty ekranu, architekturę, routing, raport WCAG i Security Bingo;
-- brakuje schematu bazy i danych SQL, uwierzytelniania, rezerwacji, JavaScriptu/Fetch, panelu administratora, uploadu zdjęć, e-maili/CRON, motywu ciemnego i wdrożenia.
+- formularze demo: `/login` oraz POST `/rooms/{id}/reservation` z walidacją serwera (`FormValidator`), CSRF (`CsrfToken`) i PRG (`FlashMessage`); nie tworzą sesji użytkownika i nie zapisują rezerwacji;
+- testy jednostkowe routingu, filtra sal, repozytorium w pamięci, odmiany PL/EN i warstwy formularzy (PHPUnit, 59 testów);
+- README zawiera zrzuty ekranu, architekturę, routing, raport WCAG, Security Bingo i opis formularzy demo;
+- brakuje schematu bazy i danych SQL, realnego uwierzytelniania, rezerwacji, JavaScriptu/Fetch, panelu administratora, uploadu zdjęć, e-maili/CRON, motywu ciemnego (branch Lab 5) i wdrożenia.
 
 To nie jest jeszcze działająca aplikacja domenowa. Agent ma ją rozwijać zgodnie z roadmapą, nie opisywać jako ukończoną.
 
@@ -651,9 +652,10 @@ To lista startowa. Nie traktuj jej jako wymówki — to zadania do wykonania w p
 | Kontener `php` nie dostaje zmiennych `DB_*` | Aplikacja nie ma z czego zbudować połączenia PDO | Przekazać `DB_*` w sekcji `environment` usługi `php` i czytać je w `src/Database.php` |
 | Brak schematu bazy i danych SQL | Kryteria 10–12 niezrealizowane | Dodać `database/01-schema.sql`, `database/02-seed.sql` i repozytorium PDO (Lab 7) |
 | Brak uwierzytelniania i ról | Kryteria 20–24 niezrealizowane | Dodać logowanie, sesję, `USER`/`ADMIN` i autoryzację (Lab 9) |
-| Brak JavaScriptu, Fetch API i motywu ciemnego | Kryteria 14, 15, 18 | Dodać `theme.js`, walidację klienta, endpointy JSON i Fetch (Lab 10–12) |
+| Formularze logowania i rezerwacji są demo | Kryteria 8, 20 | Podłączyć realne uwierzytelnianie i zapis rezerwacji (Lab 9/12) |
+| Brak JavaScriptu, Fetch API i motywu ciemnego | Kryteria 14, 15, 18 | Dodać walidację klienta i Fetch (Lab 10–12); motyw z branchu Lab 5 do scalenia |
 | Brak rezerwacji i panelu administratora | Główny proces biznesowy i kryteria 8, 25–26 | Zbudować moduł rezerwacji po bazie i logowaniu (Lab 7–12) |
-| Szczegóły sali bez formularza rezerwacji i galerii | Kryteria 8, 34 | Panel rezerwacji po module rezerwacji; upload zdjęć w Lab 13 |
+| Szczegóły sali mają formularz rezerwacji demo, ale brak realnego zapisu i galerii | Kryteria 8, 34 | Podłączyć rezerwacje (Lab 12); upload zdjęć (Lab 13) |
 | Brak e-maili i CRON | Kryteria 32–33 | `MailService` i `bin/cron.php` (Lab 13) |
 | Brak wdrożenia | Kryterium 36 | `compose.production.yaml` i publiczny deploy (Lab 14) |
 
@@ -824,4 +826,4 @@ Ten plik jest żywym dokumentem. Aktualizuj go, gdy:
 
 Nie kopiuj do niego całego README ani całych laboratoriów. Trzymaj tu **operacyjne zasady**, a szczegóły produktu w `README.md`.
 
-**Ostatnia aktualizacja:** 2026-11-19
+**Ostatnia aktualizacja:** 2026-11-20

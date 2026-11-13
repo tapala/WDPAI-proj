@@ -12,14 +12,16 @@ Projekt semestralny z przedmiotu **Projektowanie aplikacji internetowych 26/27**
 
 W typowej firmie lub na uczelni rezerwacja sali odbywa się przez kilka kanałów: arkusze, e-maile i ustne ustalenia. Trudno sprawdzić, czy sala jest wolna, jakie ma wyposażenie i kto odpowiada za dany termin. Roomly ma połączyć katalog pomieszczeń, filtrowanie, dostępność i rezerwacje w jednym miejscu.
 
-### Co działa w obecnej wersji (Laboratorium 3)
+### Co działa w obecnej wersji (Laboratorium 6)
 
 - Front controller, router (`GET`, `POST`, `PATCH`, `DELETE`), parametry ścieżki z walidacją, własne wzorce regex, kontrolowane `400` i `404`.
 - Tłumaczenia PL/EN z zapamiętaniem języka w sesji; przełącznik zachowuje filtry.
 - Powłoka aplikacji: stały sidebar i topbar na desktopie, dolna nawigacja na mobile.
 - Strona główna z informacją o etapie prac.
 - Katalog `/rooms`: wyszukiwanie po nazwie i lokalizacji, filtr typu, progi pojemności, sortowanie, licznik wyników z odmianą, stan „brak wyników” i czyszczenie filtrów.
-- Szczegóły `/rooms/{id}`: podsumowanie, opis, wyposażenie w formie chipów, powrót do katalogu.
+- Szczegóły `/rooms/{id}`: karta rezerwacji (data, godziny), podsumowanie, opis, wyposażenie w formie chipów, powrót do katalogu.
+- Formularze z walidacją serwera, CSRF (`hash_equals`), PRG i komunikatami błędów: `/login` oraz `/rooms/{id}/reservation`.
+- Oba formularze są **demonstracyjne**: nie tworzą sesji użytkownika i nie zapisują rezerwacji; interfejs mówi to wprost.
 - Stany błędów `400`, `404`, `500` z linkami do strony głównej i katalogu.
 - Osiem pomieszczeń demonstracyjnych w pamięci (`InMemoryRoomRepository`).
 - Testy jednostkowe PHPUnit.
@@ -27,7 +29,8 @@ W typowej firmie lub na uczelni rezerwacja sali odbywa się przez kilka kanałó
 ### Planowane w kolejnych laboratoriach
 
 - Schemat PostgreSQL, dane demo SQL i repozytoria PDO (Lab 7).
-- Rejestracja, logowanie, role `USER`/`ADMIN`, sesja (Lab 9).
+- Realne logowanie i zapis rezerwacji — zastąpić demonstracyjne formularze (Lab 9/12).
+- Rejestracja, role `USER`/`ADMIN`, sesja (Lab 9).
 - JavaScript, walidacja po stronie klienta i Fetch API (Lab 10–11).
 - Rezerwacje z ochroną przed nakładaniem się terminów (Lab 7–12).
 - Panel administratora, „Moje rezerwacje”, profil — po dodaniu bazy i logowania.
@@ -55,7 +58,8 @@ Zrzuty wykonano na działającej aplikacji: desktop 1440×1000, mobile 390×844.
 |---|---|---|
 | Strona główna | <img src="docs/screenshots/web-home.png" alt="Strona główna — desktop" width="480"> | <img src="docs/screenshots/mobile-home.png" alt="Strona główna — mobile" width="160"> |
 | Katalog sal | <img src="docs/screenshots/web-catalogue.png" alt="Katalog sal — desktop" width="480"> | <img src="docs/screenshots/mobile-catalogue.png" alt="Katalog sal — mobile" width="160"> |
-| Szczegóły sali | <img src="docs/screenshots/web-room-details.png" alt="Szczegóły sali — desktop" width="480"> | <img src="docs/screenshots/mobile-room-details.png" alt="Szczegóły sali — mobile" width="160"> |
+| Szczegóły sali | <img src="docs/screenshots/web-room-details.png" alt="Szczegóły sali z kartą rezerwacji (demo) — desktop" width="480"> | <img src="docs/screenshots/mobile-room-details.png" alt="Szczegóły sali z kartą rezerwacji (demo) — mobile" width="160"> |
+| Logowanie (demo) | <img src="docs/screenshots/web-login.png" alt="Formularz logowania (demo) — desktop" width="480"> | <img src="docs/screenshots/mobile-login.png" alt="Formularz logowania (demo) — mobile" width="160"> |
 | Brak wyników | <img src="docs/screenshots/web-empty-results.png" alt="Brak wyników — desktop" width="480"> | <img src="docs/screenshots/mobile-empty-results.png" alt="Brak wyników — mobile" width="160"> |
 | Błąd 404 | <img src="docs/screenshots/web-error-404.png" alt="Błąd 404 — desktop" width="480"> | <img src="docs/screenshots/mobile-error-404.png" alt="Błąd 404 — mobile" width="160"> |
 
@@ -105,14 +109,16 @@ Zależności są przekazywane przez konstruktory i składane w jednym miejscu �
 │   └── views/
 │       ├── layout.html.php
 │       ├── partials/         # sidebar, nagłówek, nawigacja, stopka, i18n
-│       ├── rooms/            # katalog i szczegóły
+│       ├── auth/             # formularz logowania (demo)
+│       ├── rooms/            # katalog, szczegóły, karta rezerwacji
 │       └── errors/
 ├── src/
 │   ├── Controller/
 │   ├── Model/
 │   ├── Repository/
+│   ├── Security/             # token CSRF
 │   ├── Service/
-│   ├── Support/
+│   ├── Support/              # walidator, flash, widok, tłumaczenia
 │   └── Routing.php
 ├── tests/
 │   ├── bootstrap.php
@@ -129,6 +135,9 @@ Zależności są przekazywane przez konstruktory i składane w jednym miejscu �
 | GET | `/` | Strona główna | publiczny |
 | GET | `/rooms` | Katalog sal i stanowisk z filtrami | publiczny |
 | GET | `/rooms/{id}` | Szczegóły pomieszczenia; `{id}` musi być liczbą całkowitą | publiczny |
+| GET | `/login` | Formularz logowania (demo) | publiczny |
+| POST | `/login` | Walidacja, CSRF, PRG; nie tworzy sesji użytkownika | publiczny |
+| POST | `/rooms/{id}/reservation` | Walidacja, CSRF, PRG; nie zapisuje rezerwacji | publiczny |
 
 Parametry zapytania obsługiwane przez `/rooms`:
 
@@ -142,13 +151,17 @@ Parametry zapytania obsługiwane przez `/rooms`:
 
 Przykład: `/rooms?q=budynek+b&kind=workstation&min_capacity=4&sort=capacity`.
 
-Router obsługuje metody `GET`, `POST`, `PATCH` i `DELETE`, parametry ścieżki `{id}` z walidacją formatu oraz własne wzorce regex, np. `{slug:[a-z0-9-]+}`. Obecnie zarejestrowane są tylko trasy `GET`.
+Router obsługuje metody `GET`, `POST`, `PATCH` i `DELETE`, parametry ścieżki `{id}` z walidacją formatu oraz własne wzorce regex, np. `{slug:[a-z0-9-]+}`. Zarejestrowane są trasy `GET` i `POST`.
+
+Formularze `POST` są demonstracyjne: przechodzą walidację, CSRF i PRG, ale **nie logują użytkownika i nie zapisują rezerwacji**. Po poprawnym wysłaniu pokazują komunikat o wersji demonstracyjnej.
 
 | Przypadek | Odpowiedź |
 |---|---|
 | `/rooms/abc` | `400 Bad Request` — parametr nie jest liczbą |
 | `/rooms?kind=garage` | `400 Bad Request` — niedozwolona wartość filtra |
 | `/rooms/999` | `404 Not Found` — poprawny format, brak zasobu |
+| POST formularza bez CSRF | `403 Forbidden` — formularz wraca z komunikatem |
+| POST z błędnymi danymi | `422 Unprocessable Entity` — błędy pól |
 | nieistniejąca trasa | `404 Not Found` |
 
 ## Uruchomienie przez Docker
@@ -227,7 +240,7 @@ Schemat bazy i import SQL **nie są jeszcze zaimplementowane**. Katalog korzysta
 - 3 stanowiska pracy (1 miejsce każde),
 - lokalizacje, opisy i wyposażenie (projektor, tablica, wideokonferencja, ekran TV, biurko, monitor, stacja dokująca, telefon).
 
-Dane służą do pokazania routingu, filtrowania i widoków. **Nie są warstwą bazy danych** i nie są trwałe. Schemat PostgreSQL, `database/01-schema.sql`, `database/02-seed.sql` i repozytorium PDO pojawią się w Laboratorium 7. Docelowy model encji opisuje [`AGENTS.md`](AGENTS.md) w sekcji 2.3.
+Dane służą do pokazania routingu, filtrowania i widoków. **Nie są warstwą bazy danych** i nie są trwałe. Formularze logowania i rezerwacji przechodzą walidację i CSRF, ale **niczego nie zapisują**. Schemat PostgreSQL, `database/01-schema.sql`, `database/02-seed.sql` i repozytorium PDO pojawią się w Laboratorium 7. Docelowy model encji opisuje [`AGENTS.md`](AGENTS.md) w sekcji 2.3.
 
 ## Diagram ERD bazy danych
 
@@ -247,54 +260,56 @@ Jednorazowo, bez uruchamiania całego środowiska:
 docker compose run --rm php vendor/bin/phpunit
 ```
 
-Aktualny wynik: **38 testów / 60 asercji**.
+Aktualny wynik: **59 testów / 114 asercji**.
 
 Zakres:
 
 - dopasowanie tras: trasa statyczna, parametry ścieżki, własny regex, `400`/`404`, metody HTTP;
 - walidacja i filtrowanie katalogu: `RoomFilter` (query, typ, pojemność, sortowanie, błędne wartości);
 - repozytorium w pamięci: pobieranie listy i pojedynczego pokoju;
-- tłumaczenia: formy liczby mnogiej PL/EN (`1 wynik`, `3 wyniki`, `5 wyników`).
+- tłumaczenia: formy liczby mnogiej PL/EN (`1 wynik`, `3 wyniki`, `5 wyników`);
+- formularze: `FormValidator` (wymagane, e-mail, długość, data, godzina, kolejność), `CsrfToken` (stabilność, `hash_equals`, obcy token) i `FlashMessage` (jednorazowość).
 
 Testy nie wymagają bazy danych.
 
 ## Raport WCAG
 
-**Data:** 2026-11-19 · **Zakres:** strona główna, katalog, szczegóły, brak wyników, 404 · **Szerokości:** 320, 390, 768, 1024, 1440 px.
+**Data:** 2026-11-20 · **Zakres:** strona główna, katalog, szczegóły z formularzem rezerwacji, logowanie, brak wyników, 404 · **Szerokości:** 320, 390, 768, 1024, 1440 px.
 
-Metoda: testy manualne (klawiatura, skip link, fokus, responsywność) oraz skryptowy audyt DOM i kontrastu w Chrome. To nie jest formalna certyfikacja WCAG — pełny audyt z narzędziami zewnętrznymi zaplanowano na Laboratorium 14.
+Metoda: testy manualne (klawiatura, skip link, fokus, formularze, responsywność), skryptowy audyt DOM i kontrastu w Chrome oraz Lighthouse. To nie jest formalna certyfikacja WCAG — pełny audyt z rzeczywistym czytnikiem ekranu zaplanowano na Laboratorium 14.
 
 | Kryterium | Wynik |
 |---|---|
 | Hierarchia nagłówków | `h1` → `h2` → `h3` na wszystkich widokach |
 | Landmarki i etykiety | `header`, `nav`, `main`, `footer`; nawigacje i grupy mają `aria-label` |
-| Formularze | Wszystkie pola mają etykiety (w filtrach ukryte wizualnie) |
+| Formularze | Etykiety, `aria-invalid`, `aria-describedby`, podsumowanie błędów `role="alert"`, komunikat `role="status"` |
 | Klawiatura | Pełna obsługa; logiczna kolejność Tab; brak pułapek fokusa |
 | Skip link | „Przejdź do treści” przenosi fokus do `main` |
-| Widoczny fokus | Obrys 3 px `#6257d9`; na ciemnym sidebarze kontrast 3.2:1 |
-| Kontrast tekstu | 0 błędów w audycie 5 widoków (4.5:1 dla tekstu, 3:1 dla dużego) |
+| Widoczny fokus | Obrys 3 px; na ciemnym sidebarze kontrast 3.2:1 |
+| Kontrast tekstu | 0 błędów w audycie 6 widoków (4.5:1 dla tekstu, 3:1 dla dużego) |
+| Lighthouse | Accessibility 1.0, Best Practices 1.0, SEO 1.0 (`/login`, `/rooms/1`) |
 | Reflow 320 px | Brak poziomego przewijania |
 | Cele dotykowe | Min. 24 px; linki kart wykorzystują całą powierzchnię karty |
 | `prefers-reduced-motion` | Animacje i przejścia wyłączone |
 | Język | `<html lang>`, `lang` na linkach PL/EN, tłumaczenia komunikatów |
 
-Znane luki: brak motywu ciemnego, brak audytu z axe/Lighthouse, brak testów z rzeczywistym czytnikiem ekranu.
+Znane luki: brak testów z rzeczywistym czytnikiem ekranu; formularze logowania i rezerwacji są demonstracyjne.
 
 ## Security Bingo
 
-Tabela pokazuje stan faktyczny na koniec Laboratorium 3. Pozycje „planowane” nie są zaimplementowane.
+Tabela pokazuje stan faktyczny na koniec Laboratorium 6. Pozycje „planowane” nie są zaimplementowane.
 
 | Obszar | Status | Dowód / uwagi |
 |---|---|---|
 | Escapowanie wyjścia | ✅ | `App\Support\Html::escape()` we wszystkich widokach i partialach |
-| Walidacja wejścia | ✅ | `RoomFilter` odrzuca błędne typy, pojemność i sortowanie (`400`) |
+| Walidacja wejścia | ✅ | `RoomFilter` dla zapytań oraz `FormValidator` dla formularzy (`422`) |
+| CSRF | ✅ | `App\Security\CsrfToken`, ukryte `_token`, `hash_equals`, odrzucenie z `403` |
 | Sekrety poza kodem | ✅ | `.env` w `.gitignore`, `.env.example` bez prawdziwych wartości |
 | Obsługa błędów | ✅ | Wyjątki logowane, użytkownik dostaje ogólny komunikat `400`/`404`/`500` |
 | Ciasteczko sesji | ⚠️ częściowo | `HttpOnly`, `SameSite=Lax`, `Secure` na HTTPS; brak logowania i regeneracji ID |
-| Hasła | ⏳ planowane | `password_hash`/`password_verify` w Lab 9 |
+| Hasła | ⏳ planowane | Formularz logowania jest demo; `password_hash`/`password_verify` w Lab 9 |
 | Prepared statements | ⏳ planowane | Brak warstwy PDO; w Lab 7 |
 | Autoryzacja i role | ⏳ planowane | Brak użytkowników; w Lab 9 |
-| CSRF | ⏳ planowane | Brak formularzy zmieniających stan; w Lab 12 |
 | Upload plików | ⏳ planowane | Galeria sal w Lab 13 |
 | Nagłówki bezpieczeństwa | ⏳ planowane | CSP, `nosniff`, `Referrer-Policy` w Lab 12 |
 | Rate limiting | ⏳ planowane | Po dodaniu logowania |
@@ -309,12 +324,14 @@ Brak wdrożenia publicznego. Projekt uruchamiany jest lokalnie przez Docker Comp
 
 ## Znane ograniczenia
 
-- Brak bazy danych, logowania, rezerwacji, panelu administratora i API — to kolejne laboratoria.
+- Brak bazy danych, realnego logowania, rezerwacji, panelu administratora i API — to kolejne laboratoria.
+- Formularze logowania i rezerwacji są demonstracyjne: nie tworzą sesji użytkownika i nie zapisują danych.
 - Dane sal są w pamięci i nie przetrwają restartu; brak schematu SQL.
 - Strona główna jest tymczasową stroną informacyjną; dashboard z Figmy wymaga danych o rezerwacjach.
 - Zdjęcia sal to kolorowe placeholdery; galeria i upload w Lab 13.
-- Szczegóły sali nie mają jeszcze formularza rezerwacji ani kalendarza dostępności.
-- Brak JavaScriptu, motywu ciemnego i pełnego audytu WCAG.
+- Szczegóły sali mają kartę rezerwacji demo, ale brak kalendarza dostępności i realnego zapisu.
+- Brak JavaScriptu, walidacji klienta i Fetch API; motyw ciemny jest rozwijany na osobnym branchu Lab 5.
+- Brak testów z rzeczywistym czytnikiem ekranu.
 - Nazwy i opisy danych demo są po polsku również w wersji EN — to dane, nie teksty interfejsu.
 
 ## Zasady developmentu
