@@ -45,7 +45,7 @@ $router = new Routing();
 $csrf = new CsrfToken();
 $flash = new FlashMessage();
 
-$roomController = new RoomController($view, $translator, new InMemoryRoomRepository());
+$roomController = new RoomController($view, $translator, new InMemoryRoomRepository(), $csrf, $flash);
 $authController = new AuthController($view, $translator, $csrf, $flash);
 
 $router->get('/', [new DefaultController($view, $translator), 'index']);
@@ -53,6 +53,7 @@ $router->get('/login', [$authController, 'showLogin']);
 $router->post('/login', [$authController, 'login']);
 $router->get('/rooms', [$roomController, 'index']);
 $router->get('/rooms/{id:\d+}', [$roomController, 'show']);
+$router->post('/rooms/{id:\d+}/reservation', [$roomController, 'reserve']);
 
 $method = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $uri = (string) ($_SERVER['REQUEST_URI'] ?? '/');

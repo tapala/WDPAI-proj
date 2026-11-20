@@ -39,7 +39,7 @@ $flashMessage = $flash['message'] ?? null;
 
     <?php if ($formError !== null || $errorItems !== []): ?>
         <div class="form-errors" role="alert">
-            <p class="form-errors__title"><?= Html::escape($translator->translate('auth.login.form_errors')) ?></p>
+            <p class="form-errors__title"><?= Html::escape($translator->translate('form.errors')) ?></p>
             <ul>
                 <?php if ($formError !== null): ?>
                     <li><?= Html::escape($translator->translate($formError)) ?></li>

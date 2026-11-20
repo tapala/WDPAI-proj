@@ -89,13 +89,27 @@ final class FormValidator
     {
         $value = $this->value($field);
 
-        if ($value === '') {
+        if ($value !== '' && !self::isDate($value)) {
+            $this->add($field, $message);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Rejects a valid date that falls before the given Y-m-d minimum.
+     *
+     * @param string $message Translation key.
+     */
+    public function dateNotBefore(string $field, string $minimum, string $message): self
+    {
+        $value = $this->value($field);
+
+        if ($value === '' || !self::isDate($value) || !self::isDate($minimum)) {
             return $this;
         }
 
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-
-        if ($date === false || $date->format('Y-m-d') !== $value) {
+        if (strcmp($value, $minimum) < 0) {
             $this->add($field, $message);
         }
 
@@ -177,5 +191,12 @@ final class FormValidator
     private static function isTime(string $value): bool
     {
         return preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $value) === 1;
+    }
+
+    private static function isDate(string $value): bool
+    {
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+
+        return $date !== false && $date->format('Y-m-d') === $value;
     }
 }

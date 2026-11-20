@@ -39,7 +39,7 @@ final class AuthController extends AppController
     {
         if (!$this->csrf->isValid($_POST['_token'] ?? null)) {
             $this->render('auth/login', $this->viewData([
-                'formError' => 'auth.login.csrf_invalid',
+                'formError' => 'form.csrf_invalid',
             ]), 403);
 
             return;

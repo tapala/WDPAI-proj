@@ -63,6 +63,21 @@ final class FormValidatorTest extends TestCase
         self::assertTrue($wrongFormat->hasErrors());
     }
 
+    public function testDateNotBeforeRejectsOnlyPastDates(): void
+    {
+        $today = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+        $past = (new FormValidator(['date' => $yesterday]))->dateNotBefore('date', $today, 'validation.past');
+        self::assertSame(['validation.past'], $past->errors()['date']);
+
+        self::assertFalse((new FormValidator(['date' => $today]))->dateNotBefore('date', $today, 'validation.past')->hasErrors());
+        self::assertFalse((new FormValidator(['date' => $tomorrow]))->dateNotBefore('date', $today, 'validation.past')->hasErrors());
+        self::assertFalse((new FormValidator(['date' => '']))->dateNotBefore('date', $today, 'validation.past')->hasErrors());
+        self::assertFalse((new FormValidator(['date' => 'nope']))->dateNotBefore('date', $today, 'validation.past')->hasErrors());
+    }
+
     public function testTimeAcceptsOnly24HourFormat(): void
     {
         $valid = (new FormValidator(['time' => '09:30']))->time('time', 'validation.time');
