@@ -22,6 +22,14 @@ use App\Support\Html;
     </nav>
 
     <div class="sidebar__footer">
+        <a class="sidebar__login" href="/login"<?= $currentPath === '/login' ? ' aria-current="page"' : '' ?>>
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="8" r="3.5"/>
+                <path d="M5 20a7 7 0 0 1 14 0"/>
+            </svg>
+            <span><?= Html::escape($translator->translate('nav.login')) ?></span>
+        </a>
+
         <div class="sidebar__tools">
             <?php
             $themeToggleClass = 'theme-toggle--dark';

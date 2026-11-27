@@ -6,6 +6,12 @@ use App\Support\Html;
 
 /** @var App\Model\Room $room */
 /** @var App\Support\Translator $translator */
+/** @var string $csrfToken */
+/** @var array<string, string>|null $flash */
+/** @var array{date: string, start_time: string, end_time: string} $reservation */
+/** @var array<string, list<string>> $reservationErrors */
+/** @var string|null $reservationFormError */
+/** @var string $today */
 
 $meta = implode(' · ', [
     $translator->translate('rooms.kind.' . $room->kind),
@@ -27,7 +33,11 @@ $thumbVariant = $thumbVariants[($room->id - 1) % count($thumbVariants)];
         <p class="catalogue-head__lead"><?= Html::escape($meta) ?></p>
     </section>
 
-    <div class="room-detail__photo room-detail__photo--<?= Html::escape($thumbVariant) ?>" aria-hidden="true"></div>
+    <div class="room-detail__hero">
+        <div class="room-detail__photo room-detail__photo--<?= Html::escape($thumbVariant) ?>" aria-hidden="true"></div>
+
+        <?php require __DIR__ . '/partials/reservation-card.html.php'; ?>
+    </div>
 
     <section class="room-detail__section" aria-labelledby="room-about-title">
         <h2 id="room-about-title"><?= Html::escape($translator->translate('rooms.details.about')) ?></h2>
@@ -52,6 +62,4 @@ $thumbVariant = $thumbVariants[($room->id - 1) % count($thumbVariants)];
             </ul>
         <?php endif; ?>
     </section>
-
-    <p class="notice room-detail__notice"><?= Html::escape($translator->translate('rooms.details.availability_notice')) ?></p>
 </article>

@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Controller\AuthController;
 use App\Controller\DefaultController;
 use App\Controller\RoomController;
 use App\Repository\InMemoryRoomRepository;
 use App\Routing;
+use App\Security\CsrfToken;
+use App\Support\FlashMessage;
 use App\Support\HttpException;
 use App\Support\Translator;
 use App\Support\View;
@@ -39,12 +42,18 @@ if (!is_string($locale) || !Translator::supports($locale)) {
 $translator = Translator::fromDirectory(dirname(__DIR__) . '/translations', $locale);
 $view = new View(dirname(__DIR__) . '/public/views', $translator);
 $router = new Routing();
+$csrf = new CsrfToken();
+$flash = new FlashMessage();
 
-$roomController = new RoomController($view, $translator, new InMemoryRoomRepository());
+$roomController = new RoomController($view, $translator, new InMemoryRoomRepository(), $csrf, $flash);
+$authController = new AuthController($view, $translator, $csrf, $flash);
 
 $router->get('/', [new DefaultController($view, $translator), 'index']);
+$router->get('/login', [$authController, 'showLogin']);
+$router->post('/login', [$authController, 'login']);
 $router->get('/rooms', [$roomController, 'index']);
 $router->get('/rooms/{id:\d+}', [$roomController, 'show']);
+$router->post('/rooms/{id:\d+}/reservation', [$roomController, 'reserve']);
 
 $method = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $uri = (string) ($_SERVER['REQUEST_URI'] ?? '/');

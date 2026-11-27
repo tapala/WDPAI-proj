@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace App\Tests\Unit;
 
 use App\Support\Translator;
 use PHPUnit\Framework\TestCase;

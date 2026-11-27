@@ -13,6 +13,7 @@ use App\Support\Html;
 
 $currentPath = $currentPath ?? '/';
 $sectionLabel = $sectionLabel ?? match (true) {
+    $currentPath === '/login' => $translator->translate('auth.topbar'),
     $currentPath === '/rooms' => $translator->translate('rooms.topbar'),
     str_starts_with($currentPath, '/rooms') => $translator->translate('rooms.details.topbar'),
     default => $translator->translate('nav.home'),
